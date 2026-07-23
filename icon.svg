@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- Fundo com o verde escuro do seu projeto -->
+  <rect width="512" height="512" rx="112" fill="#0a291c"/>
+  
+  <!-- Borda sutil interna dourada -->
+  <rect x="24" y="24" width="464" height="464" rx="92" fill="none" stroke="#e2c07d" stroke-width="8" opacity="0.3"/>
+  
+  <!-- Monograma JQ em fonte serifada elegante na cor dourada -->
+  <text x="50%" y="54%" font-family="Georgia, serif" font-size="200" font-weight="bold" fill="#e2c07d" text-anchor="middle" dominant-baseline="middle" letter-spacing="4">
+    JQ
+  </text>
+</svg>

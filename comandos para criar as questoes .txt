@@ -1,0 +1,148 @@
+modelo das questões 
+
+INSERT INTO questões (disciplina, materia, banca, ano, enunciado, opcao_a, opcao_b, opcao_c, opcao_d, resposta_correta, comentario, is_free)
+SELECT 
+  x.disciplina, x.materia, x.banca, x.ano, x.enunciado, 
+  x.opcao_a, x.opcao_b, x.opcao_c, x.opcao_d, x.resposta_correta, x.comentario, x.is_free
+FROM json_populate_recordset(null::questões, '[
+  {
+    "disciplina": "Processo Civil",
+    "materia": "Normas Fundamentais e Princípios",
+    "banca": "FGV",
+    "ano": 2026,
+    "enunciado": "A respeito das normas fundamentais do processo civil previstas no Código de Processo Civil (CPC), assinale a afirmativa correta:",
+    "opcao_a": "O juiz pode decidir com base em fundamento a respeito do qual não se tenha dado às partes oportunidade de se manifestar, desde que se trate de matéria de ordem pública.",
+    "opcao_b": "A conciliação, a mediação e outros métodos de solução consensual de conflitos devem ser estimulados apenas antes da instauração do processo judicial.",
+    "opcao_c": "Todos os julgamentos dos órgãos do Poder Judiciário serão públicos e fundamentadas todas as decisões, sob pena de nulidade.",
+    "opcao_d": "A cooperação processual é dever restrito aos advogados das partes, não se estendendo ao magistrado.",
+    "resposta_correta": "c",
+    "comentario": "Art. 11 do CPC: Todos os julgamentos dos órgãos do Poder Judiciário serão públicos e fundamentadas todas as decisões, sob pena de nulidade. O Art. 10 proíbe a decisão surpresa mesmo para matérias de ordem pública.",
+    "is_free": true
+  },
+  {
+    "disciplina": "Processo Civil",
+    "materia": "Competência Processual",
+    "banca": "Cebraspe",
+    "ano": 2026,
+    "enunciado": "Sobre as regras de competência e modificação de competência no CPC, assinale a opção correta:",
+    "opcao_a": "A incompetência absoluta deve ser alegada como questão preliminar de contestação e não pode ser conhecida de ofício pelo juiz.",
+    "opcao_b": "A incompetência relativa pode ser alegada em qualquer tempo e grau de jurisdição e deve ser declarada de ofício pelo magistrado.",
+    "opcao_c": "Dão causa à modificação da competência relativa a conexão e a continência.",
+    "opcao_d": "A ação fundada em direito real sobre imóveis é de competência do foro de domicílio do réu em qualquer hipótese.",
+    "resposta_correta": "c",
+    "comentario": "Art. 54 do CPC: A conexão ou a continência determinam a modificação da competência relativa. A incompetência absoluta é reconhecida de ofício (Art. 64, § 1º) e a relativa prorroga-se se não alegada na contestação (Art. 65).",
+    "is_free": true
+  },
+  {
+    "disciplina": "Processo Civil",
+    "materia": "Litisconsórcio e Intervenção de Terceiros",
+    "banca": "Vunesp",
+    "ano": 2026,
+    "enunciado": "Acerca do litisconsórcio e das modalidades de intervenção de terceiros, assinale a afirmativa correta:",
+    "opcao_a": "O litisconsórcio será necessário por disposição de lei ou quando, pela natureza da relação jurídica controvertida, a eficácia da sentença depender da citação de todos que devam ser litisconsortes.",
+    "opcao_b": "A denunciação da lide é cabível apenas pelo autor da ação principal, sendo vedada ao réu.",
+    "opcao_c": "O chamamento ao processo é admissível para que o terceiro assuma a posição de autor da demanda.",
+    "opcao_d": "A amicus curiae ingressa no processo exclusivamente para substituir a parte ausente ou incapaz.",
+    "resposta_correta": "a",
+    "comentario": "Art. 114 do CPC: O litisconsórcio será necessário por disposição de lei ou pela natureza da relação jurídica controvertida, caso em que a eficácia da sentença dependerá da citação de todos que devam ser litisconsortes.",
+    "is_free": true
+  },
+  {
+    "disciplina": "Processo Civil",
+    "materia": "Tutela Provisória",
+    "banca": "FGV",
+    "ano": 2026,
+    "enunciado": "Em relação às tutelas provisórias de urgência e de evidência, assinale a opção correta:",
+    "opcao_a": "A tutela de urgência será concedida quando houver elementos que evidenciem a probabilidade do direito e o perigo de dano ou o risco ao resultado útil do processo.",
+    "opcao_b": "A tutela de evidência exige obrigatoriamente a demonstração do perigo de dano ou risco ao resultado útil do processo.",
+    "opcao_c": "A tutela provisória conserva sua eficácia na pendência do processo, mas não pode ser modificada ou revogada a qualquer tempo.",
+    "opcao_d": "A tutela de urgência de natureza cautelar não pode ser requerida em caráter antecedente.",
+    "resposta_correta": "a",
+    "comentario": "Art. 300 do CPC: A tutela de urgência será concedida quando houver elementos que evidenciem a probabilidade do direito e o perigo de dano ou o risco ao resultado útil do processo. A tutela de evidência independe de perigo de dano (Art. 311).",
+    "is_free": true
+  },
+  {
+    "disciplina": "Processo Civil",
+    "materia": "Petição Inicial e Resposta do Réu",
+    "banca": "Cebraspe",
+    "ano": 2026,
+    "enunciado": "Sobre a fase postulatória, a petição inicial e a contestação, assinale a alternativa correta:",
+    "opcao_a": "Incumbe ao réu alegar, na contestação, antes de discutir o mérito, preliminares como incompetência relativa, incorreção do valor da causa e perempção.",
+    "opcao_b": "A indeferimento da petição inicial ocorre após a citação e resposta do réu, durante a fase de instrução.",
+    "opcao_c": "O autor pode aditar ou alterar o pedido até o julgamento da apelação, independentemente do consentimento do réu.",
+    "opcao_d": "A reconvenção não pode ser proposta na mesma peça da contestação, exigindo petição autônoma.",
+    "resposta_correta": "a",
+    "comentario": "Art. 337 do CPC: Incumbe ao réu, antes de discutir o mérito, alegar preliminares (como incompetência, incorreção do valor da causa, etc.). A reconvenção pode ser proposta na própria contestação (Art. 343).",
+    "is_free": true
+  },
+  {
+    "disciplina": "Processo Civil",
+    "materia": "Provas no Processo Civil",
+    "banca": "Vunesp",
+    "ano": 2026,
+    "enunciado": "A respeito do direito probatório no CPC, assinale a opção correta:",
+    "opcao_a": "O ônus da prova incumbe ao réu quanto ao fato constitutivo do seu direito, e ao autor quanto à existência de fato impeditivo, modificativo ou extintivo.",
+    "opcao_b": "O juiz apreciará a prova constante dos autos independentemente do sujeito que a tiver promovido, e indicará na decisão as razões da formação de seu convencimento.",
+    "opcao_c": "A confissão judicial faz prova contra o confitente, mas pode ser retratada livremente a qualquer momento sem fundamentação.",
+    "opcao_d": "A prova testemunhal é sempre admissível, ainda que a lei exija prova escrita exclusiva para a validação do ato.",
+    "resposta_correta": "b",
+    "comentario": "Art. 371 do CPC (Princípio do Livre Convencimento Motivado e da Aquisição Processual da Prova): O juiz apreciará a prova constante dos autos, independentemente do sujeito que a tiver promovido, e indicará na decisão as razões da formação de seu convencimento.",
+    "is_free": true
+  },
+  {
+    "disciplina": "Processo Civil",
+    "materia": "Sentença e Coisa Julgada",
+    "banca": "FGV",
+    "ano": 2026,
+    "enunciado": "Sobre os requisitos da sentença e a coisa julgada material, assinale a afirmativa correta:",
+    "opcao_a": "Não se considera fundamentada qualquer decisão judicial que se limitar à indicação, à reprodução ou à paráfrase de ato normativo, sem explicar sua relação com a causa.",
+    "opcao_b": "São elementos essenciais da sentença apenas o relatório e o dispositivo, sendo a fundamentação facultativa nos juizados especiais.",
+    "opcao_c": "A coisa julgada material torna imutável e indiscutível a decisão de mérito, impedindo sua revisão mesmo por Ação Rescisória.",
+    "opcao_d": "Os motivos e a verdade dos fatos estabelecida na fundamentação da sentença fazem coisa julgada material em todos os casos.",
+    "resposta_correta": "a",
+    "comentario": "Art. 489, § 1º, I, do CPC: Não se considera fundamentada qualquer decisão judicial que se limitar à indicação, à reprodução ou à paráfrase de ato normativo, sem explicar sua relação com a causa. Os motivos da sentença NÃO fazem coisa julgada (Art. 504, I).",
+    "is_free": true
+  },
+  {
+    "disciplina": "Processo Civil",
+    "materia": "Teoria Geral dos Recursos",
+    "banca": "Cebraspe",
+    "ano": 2026,
+    "enunciado": "Quanto à ordem dos processos no tribunal e à teoria geral dos recursos, assinale a alternativa correta:",
+    "opcao_a": "O prazo para interposição de qualquer recurso no CPC é de 15 dias úteis, inclusive para os embargos de declaração.",
+    "opcao_b": "A renúncia ao direito de recorrer depende de aceitação da outra parte para produzir efeitos.",
+    "opcao_c": "Dos despachos cabe recurso de agravo de instrumento no prazo de 15 dias.",
+    "opcao_d": "O recurso pode ser interposto pela parte vencida, pelo terceiro prejudicado e pelo Ministério Público.",
+    "resposta_correta": "d",
+    "comentario": "Art. 996 do CPC: O recurso pode ser interposto pela parte vencida, pelo terceiro prejudicado e pelo Ministério Público. Os Embargos de Declaração têm prazo de 5 dias (Art. 1.023). Dos despachos não cabe recurso (Art. 1.001).",
+    "is_free": true
+  },
+  {
+    "disciplina": "Processo Civil",
+    "materia": "Espécies Recursais (Apelação e Agravo)",
+    "banca": "Vunesp",
+    "ano": 2026,
+    "enunciado": "A respeito dos recursos de Apelação e Agravo de Instrumento no CPC, assinale a alternativa correta:",
+    "opcao_a": "Cabe agravo de instrumento contra as decisões interlocutórias que versarem sobre tutelas provisórias, rejeição da alegação de convenção de arbitragem e redistribuição do ônus da prova.",
+    "opcao_b": "Da sentença cabe agravo de instrumento, salvo quando proferida em execução de título extrajudicial.",
+    "opcao_c": "A apelação interposta contra sentença que julga improcedentes os embargos do executado possui sempre efeito suspensivo automático.",
+    "opcao_d": "As decisões interlocutórias não contempladas no rol do agravo de instrumento precluem imediatamente caso não sejam impugnadas por mandado de segurança.",
+    "resposta_correta": "a",
+    "comentario": "Art. 1.015 do CPC: Cabe agravo de instrumento contra decisões interlocutórias que versarem sobre tutelas provisórias (inc. I), rejeição da alegação de convenção de arbitragem (inc. III) e modificação do ônus da prova (inc. XI). Da sentença cabe apelação (Art. 1.009).",
+    "is_free": true
+  },
+  {
+    "disciplina": "Processo Civil",
+    "materia": "Processo de Execução e Cumprimento de Sentença",
+    "banca": "FGV",
+    "ano": 2026,
+    "enunciado": "Em relação à execução fundada em título extrajudicial e ao cumprimento de sentença, assinale a alternativa correta:",
+    "opcao_a": "A defesa do executado no cumprimento de sentença dá-se mediante embargos à execução, independentemente de penhora.",
+    "opcao_b": "O executado será citado para pagar a dívida no prazo de 3 (três) dias na execução de título extrajudicial.",
+    "opcao_c": "A penhora de dinheiro em depósito ou em aplicação financeira possui caráter subsidiário em relação à penhora de bens móveis.",
+    "opcao_d": "Os embargos à execução possuem efeito suspensivo automático em todos os casos a partir da sua protocolização.",
+    "resposta_correta": "b",
+    "comentario": "Art. 829 do CPC: O executado será citado para pagar a dívida no prazo de 3 (três) dias. No cumprimento de sentença a defesa é por Impugnação (Art. 525). Dinheiro é a prioridade absoluta da ordem de penhora (Art. 835, I).",
+    "is_free": true
+  }
+]') AS x;
