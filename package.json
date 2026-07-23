@@ -1,7 +1,7 @@
 {
-  "name": "projeto_app_de_estudos_juridico",
+  "name": "juris-quant",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
