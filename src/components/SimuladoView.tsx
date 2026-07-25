@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { fetchQuestions as fetchQuestionsFromService, Question } from '../services/questions';
+import { supabase } from '../lib/supabase';
 
 interface SimuladoProps {
   type: 'discipline' | 'focus';
@@ -34,10 +35,65 @@ export default function SimuladoView({ type, itemId, itemTitle, maxQuestions, on
 
   const currentQ = questions[currentIndex];
 
+  // Função para salvar o progresso no Supabase quando finalizar o simulado
+  const saveProgressToDatabase = async (answeredCount: number) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const userId = session.user.id;
+
+      // 1. Busca o registro atual do usuário
+      const { data: currentProgress, error: fetchError } = await supabase
+        .from('user_progress')
+        .select('questions_used')
+        .eq('user_id', userId)
+        .single();
+
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        console.error('Erro ao buscar progresso para atualizar:', fetchError);
+        return;
+      }
+
+      const previousUsed = currentProgress ? currentProgress.questions_used : 0;
+      const newTotal = previousUsed + answeredCount;
+
+      // 2. Atualiza ou insere o novo valor acumulado
+      const { error: upsertError } = await supabase
+        .from('user_progress')
+        .upsert(
+          { user_id: userId, questions_used: newTotal, updated_at: new Date().toISOString() },
+          { onConflict: 'user_id' }
+        );
+
+      if (upsertError) {
+        console.error('Erro ao salvar progresso no Supabase:', upsertError);
+      }
+    } catch (err) {
+      console.error('Erro inesperado ao salvar progresso:', err);
+    }
+  };
+
   const handleNext = () => {
     // Salva a resposta escolhida para a questão atual
     if (selectedOption) {
-      setUserAnswers(prev => ({ ...prev, [currentIndex]: selectedOption }));
+      setUserAnswers(prev => {
+        const updated = { ...prev, [currentIndex]: selectedOption };
+        
+        // Se esta for a última questão, dispara o salvamento do progresso
+        if (currentIndex >= questions.length - 1) {
+          const totalAnswered = Object.keys(updated).length;
+          saveProgressToDatabase(totalAnswered);
+        }
+        
+        return updated;
+      });
+    } else {
+      // Caso o usuário avance sem responder (embora haja trava se clicar direto, por segurança)
+      if (currentIndex >= questions.length - 1) {
+        const totalAnswered = Object.keys(userAnswers).length;
+        saveProgressToDatabase(totalAnswered);
+      }
     }
 
     setSelectedOption(null);
@@ -50,7 +106,6 @@ export default function SimuladoView({ type, itemId, itemTitle, maxQuestions, on
     }
   };
 
-  // Salva a última resposta e finaliza caso clique em responder e já seja a última
   const handleAnswerClick = (letter: string) => {
     setSelectedOption(letter);
   };

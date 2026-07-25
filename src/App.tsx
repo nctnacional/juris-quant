@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from './lib/supabase';
 import Auth from './components/Auth';
 import SimuladoView from './components/SimuladoView';
-import { Header } from './components/Header';
+import Header from './components/Header';
 
 interface Discipline {
   id: string;
@@ -61,6 +61,7 @@ export default function App() {
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [questionsUsed, setQuestionsUsed] = useState<number>(0);
   const [activeSimulado, setActiveSimulado] = useState<{
     type: 'discipline' | 'focus';
     id: string;
@@ -71,16 +72,42 @@ export default function App() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
+      if (data.session) {
+        fetchUserProgress(data.session.user.id);
+      }
       setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, currentSession) => {
       setSession(currentSession);
+      if (currentSession) {
+        fetchUserProgress(currentSession.user.id);
+      }
       setLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const fetchUserProgress = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_progress')
+        .select('questions_used')
+        .eq('user_id', userId)
+        .single();
+
+      if (data) {
+        setQuestionsUsed(data.questions_used);
+      } else if (error && error.code === 'PGRST116') {
+        // Se ainda não tem registro, cria um com 0
+        await supabase.from('user_progress').insert([{ user_id: userId, questions_used: 0 }]);
+        setQuestionsUsed(0);
+      }
+    } catch (err) {
+      console.error('Erro ao buscar progresso:', err);
+    }
+  };
 
   if (loading) {
     return (
@@ -128,7 +155,12 @@ export default function App() {
   return (
     <div style={{ backgroundColor: '#f8f7f2', minHeight: '100vh', color: '#1f2937', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
       
-      <Header />
+      <Header 
+        userPlan={session?.user?.email === 'eletrica2020@hotmail.com' ? 'free' : 'premium'} 
+        questionsUsed={questionsUsed} 
+        onOpenPlans={() => alert('Funcionalidade de upgrade em breve!')} 
+        onLogout={() => supabase.auth.signOut()} 
+      />
 
       {activeSimulado ? (
         <SimuladoView 
