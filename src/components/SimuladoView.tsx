@@ -5,7 +5,7 @@ interface SimuladoProps {
   type: 'discipline' | 'focus';
   itemId: string;
   itemTitle: string;
-  maxQuestions?: number; // Nova propriedade opcional para limitar o total de questões
+  maxQuestions?: number;
   onBack: () => void;
 }
 
@@ -15,6 +15,10 @@ export default function SimuladoView({ type, itemId, itemTitle, maxQuestions, on
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [showAnswer, setShowAnswer] = useState(false);
+  
+  // Novos estados para controlar as respostas e o fim do simulado
+  const [userAnswers, setUserAnswers] = useState<{ [index: number]: string }>({});
+  const [isFinished, setIsFinished] = useState(false);
 
   useEffect(() => {
     loadQuestions();
@@ -22,12 +26,8 @@ export default function SimuladoView({ type, itemId, itemTitle, maxQuestions, on
 
   const loadQuestions = async () => {
     setLoading(true);
-    // Busca todas as questões do serviço
     const data = await fetchQuestionsFromService(itemTitle);
-    
-    // Se houver um limite definido (ex: 150 para o modo free), corta o array
     const finalQuestions = maxQuestions ? data.slice(0, maxQuestions) : data;
-
     setQuestions(finalQuestions);
     setLoading(false);
   };
@@ -35,17 +35,86 @@ export default function SimuladoView({ type, itemId, itemTitle, maxQuestions, on
   const currentQ = questions[currentIndex];
 
   const handleNext = () => {
+    // Salva a resposta escolhida para a questão atual
+    if (selectedOption) {
+      setUserAnswers(prev => ({ ...prev, [currentIndex]: selectedOption }));
+    }
+
     setSelectedOption(null);
     setShowAnswer(false);
+
     if (currentIndex < questions.length - 1) {
       setCurrentIndex(currentIndex + 1);
+    } else {
+      setIsFinished(true); // Chegou ao fim, ativa a tela de resultado
     }
+  };
+
+  // Salva a última resposta e finaliza caso clique em responder e já seja a última
+  const handleAnswerClick = (letter: string) => {
+    setSelectedOption(letter);
+  };
+
+  const handleConfirmAnswer = () => {
+    if (selectedOption) {
+      setUserAnswers(prev => ({ ...prev, [currentIndex]: selectedOption }));
+    }
+    setShowAnswer(true);
   };
 
   if (loading) {
     return (
       <div style={{ textAlign: 'center', padding: '4rem', color: '#0a291c' }}>
         <h2>Carregando simulado de {itemTitle}...</h2>
+      </div>
+    );
+  }
+
+  // TELA DE RESULTADO FINAL
+  if (isFinished) {
+    const totalQuestions = questions.length;
+    const correctCount = questions.reduce((acc, q, index) => {
+      return userAnswers[index] === q.resposta_correta ? acc + 1 : acc;
+    }, 0);
+    const percentage = Math.round((correctCount / totalQuestions) * 100);
+
+    return (
+      <div style={{ maxWidth: '800px', margin: '2rem auto', padding: '1.5rem' }}>
+        <button 
+          onClick={onBack}
+          style={{ background: 'none', border: 'none', color: '#0a291c', fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+        >
+          ← Voltar para a Tela Principal
+        </button>
+
+        <div style={{ backgroundColor: '#0a291c', color: '#ffffff', borderRadius: '16px', padding: '2.5rem', textAlign: 'center', border: '1px solid rgba(226, 192, 125, 0.3)' }}>
+          <span style={{ color: '#e2c07d', fontSize: '0.9rem', fontWeight: 700, textTransform: 'uppercase' }}>Simulado Concluído</span>
+          <h2 style={{ fontFamily: 'serif', marginTop: '0.5rem', fontSize: '2rem' }}>{itemTitle}</h2>
+          
+          <div style={{ margin: '2rem 0', padding: '1.5rem', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '12px' }}>
+            <p style={{ fontSize: '1.1rem', color: '#e2d9c8' }}>Você acertou</p>
+            <p style={{ fontSize: '3rem', fontWeight: 'bold', color: '#e2c07d', margin: '0.5rem 0' }}>
+              {correctCount} <span style={{ fontSize: '1.5rem', color: '#ffffff' }}>/ {totalQuestions}</span>
+            </p>
+            <p style={{ fontSize: '1rem', color: '#d1fae5' }}>Aproveitamento de {percentage}%</p>
+          </div>
+
+          <button
+            onClick={onBack}
+            style={{
+              backgroundColor: '#e2c07d',
+              color: '#0a291c',
+              fontWeight: 'bold',
+              padding: '0.9rem 2rem',
+              borderRadius: '8px',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: '1rem'
+            }}
+          >
+            Voltar ao Início
+          </button>
+        </div>
       </div>
     );
   }
@@ -109,7 +178,7 @@ export default function SimuladoView({ type, itemId, itemTitle, maxQuestions, on
                 <button
                   key={letter}
                   disabled={showAnswer}
-                  onClick={() => setSelectedOption(letter)}
+                  onClick={() => handleAnswerClick(letter)}
                   style={{
                     textAlign: 'left',
                     padding: '1rem',
@@ -133,7 +202,7 @@ export default function SimuladoView({ type, itemId, itemTitle, maxQuestions, on
             {!showAnswer ? (
               <button
                 disabled={!selectedOption}
-                onClick={() => setShowAnswer(true)}
+                onClick={handleConfirmAnswer}
                 style={{
                   backgroundColor: selectedOption ? '#0a291c' : '#9ca3af',
                   color: '#ffffff',
