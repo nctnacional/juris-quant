@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from './lib/supabase';
 import Auth from './components/Auth';
 import SimuladoView from './components/SimuladoView';
-import Header from './components/Header';
-import { ModalPlanos } from './components/ModalPlanos'; // <-- 1. Importação do Modal de Planos
+import { Header } from './components/Header';
 
 interface Discipline {
   id: string;
@@ -62,9 +61,6 @@ export default function App() {
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [questionsUsed, setQuestionsUsed] = useState<number>(0);
-  const [userPlan, setUserPlan] = useState<string>('free');
-  const [isPlansOpen, setIsPlansOpen] = useState(false); // <-- 2. Estado para controlar a abertura do modal
   const [activeSimulado, setActiveSimulado] = useState<{
     type: 'discipline' | 'focus';
     id: string;
@@ -75,51 +71,16 @@ export default function App() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
-      if (data.session) {
-        fetchUserData(data.session.user.id);
-      }
       setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, currentSession) => {
       setSession(currentSession);
-      if (currentSession) {
-        fetchUserData(currentSession.user.id);
-      }
       setLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
-
-  const fetchUserData = async (userId: string) => {
-    try {
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('plan')
-        .eq('id', userId)
-        .single();
-
-      if (profileData && profileData.plan) {
-        setUserPlan(profileData.plan);
-      }
-
-      const { data: progressData, error: progressError } = await supabase
-        .from('progresso do usuário')
-        .select('questions_used')
-        .eq('user_id', userId)
-        .single();
-
-      if (progressData) {
-        setQuestionsUsed(progressData.questions_used);
-      } else if (progressError && progressError.code === 'PGRST116') {
-        await supabase.from('progresso do usuário').insert([{ user_id: userId, questions_used: 0 }]);
-        setQuestionsUsed(0);
-      }
-    } catch (err) {
-      console.error('Erro ao buscar dados do usuário:', err);
-    }
-  };
 
   if (loading) {
     return (
@@ -139,29 +100,23 @@ export default function App() {
     );
   }
 
-  const isFree = userPlan === 'free';
-  const isIntermediario = userPlan === 'intermediario';
-
   const handleFocusClick = (item: FocusTarget) => {
-    if (isIntermediario && item.id !== 'oab' && item.id !== 'tre') {
-      alert('Seu plano atual ("Plano Disciplinas") dá acesso às disciplinas, OAB e TRE. Faça o upgrade para o Plano Completo para desbloquear as demais preparações especiais!');
-      return;
-    }
+    const userEmail = session?.user?.email;
 
-    if (isFree) {
-      alert('Esta área de Foco Especial é exclusiva para planos superiores. Faça o upgrade para ter acesso completo!');
+    if (userEmail === 'eletrica2020@hotmail.com' && item.id !== 'oab' && item.id !== 'tre') {
+      alert('Seu plano atual ("Plano Disciplinas") dá acesso às disciplinas, OAB e TRE. Faça o upgrade para o Plano Completo para desbloquear as demais preparações especiais!');
       return;
     }
 
     setActiveSimulado({ type: 'focus', id: item.id, title: item.title });
   };
 
-  const handleDisciplineClick = (item: Discipline) => {
+  const handleDisciplineClick = (item: Discipline, isFreeUser: boolean = false) => {
     setActiveSimulado({ 
       type: 'discipline', 
       id: item.id, 
       title: item.title,
-      isFreeLimit: isFree 
+      isFreeLimit: isFreeUser 
     });
   };
 
@@ -173,12 +128,7 @@ export default function App() {
   return (
     <div style={{ backgroundColor: '#f8f7f2', minHeight: '100vh', color: '#1f2937', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
       
-      <Header 
-        userPlan={userPlan as any} 
-        questionsUsed={questionsUsed} 
-        onOpenPlans={() => setIsPlansOpen(true)} /* <-- 3. Aciona a abertura do modal ao clicar */
-        onLogout={() => supabase.auth.signOut()} 
-      />
+      <Header />
 
       {activeSimulado ? (
         <SimuladoView 
@@ -271,7 +221,7 @@ export default function App() {
             {filteredDisciplines.map((item) => (
               <div 
                 key={item.id} 
-                onClick={() => handleDisciplineClick(item)}
+                onClick={() => handleDisciplineClick(item, false)}
                 style={{ 
                   backgroundColor: '#e4eae3', 
                   border: '1px solid #c7d3c5', 
@@ -311,13 +261,6 @@ export default function App() {
 
         </div>
       )}
-
-      {/* 4. Renderização condicional do Modal de Planos */}
-      <ModalPlanos 
-        isOpen={isPlansOpen} 
-        onClose={() => setIsPlansOpen(false)} 
-      />
-
     </div>
   );
 }

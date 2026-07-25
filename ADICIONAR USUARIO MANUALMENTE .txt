@@ -1,0 +1,34 @@
+         PARA ADICIONAR MANUALMENTE
+
+PREMIUM 
+
+update profiles
+set plan = 'premium'
+from auth.users
+where profiles.id = auth.users.id
+  and auth.users.email = 'ncteletrica@gmail.com';
+
+
+INTERMEDIARIO 
+
+update profiles
+set plan = 'intermediario'
+from auth.users
+where profiles.id = auth.users.id
+  and auth.users.email = 'eletrica2020@hotmail.com';
+
+
+
+-- Para alterar o plano de um usuário específico para Premium por e-mail:
+update profiles
+set plan = 'premium'
+where id in (
+  select id from auth.users where email = 'seu_email_aqui@gmail.com'
+);
+
+-- OU para alterar para o Plano Intermediário:
+update profiles
+set plan = 'intermediario'
+where id in (
+  select id from auth.users where email = 'seu_email_aqui@gmail.com'
+);
