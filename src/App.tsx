@@ -100,7 +100,6 @@ export default function App() {
       if (data) {
         setQuestionsUsed(data.questions_used);
       } else if (error && error.code === 'PGRST116') {
-        // Se ainda não tem registro, cria um com 0
         await supabase.from('user_progress').insert([{ user_id: userId, questions_used: 0 }]);
         setQuestionsUsed(0);
       }
@@ -127,23 +126,30 @@ export default function App() {
     );
   }
 
-  const handleFocusClick = (item: FocusTarget) => {
-    const userEmail = session?.user?.email;
+  const userEmail = session?.user?.email;
+  const isPremium = userEmail === 'ncteletrica@gmail.com';
+  const isFree = userEmail !== 'ncteletrica@gmail.com' && userEmail !== 'eletrica2020@hotmail.com';
 
+  const handleFocusClick = (item: FocusTarget) => {
     if (userEmail === 'eletrica2020@hotmail.com' && item.id !== 'oab' && item.id !== 'tre') {
       alert('Seu plano atual ("Plano Disciplinas") dá acesso às disciplinas, OAB e TRE. Faça o upgrade para o Plano Completo para desbloquear as demais preparações especiais!');
+      return;
+    }
+
+    if (isFree) {
+      alert('Esta área de Foco Especial é exclusiva para planos superiores. Faça o upgrade para ter acesso completo!');
       return;
     }
 
     setActiveSimulado({ type: 'focus', id: item.id, title: item.title });
   };
 
-  const handleDisciplineClick = (item: Discipline, isFreeUser: boolean = false) => {
+  const handleDisciplineClick = (item: Discipline) => {
     setActiveSimulado({ 
       type: 'discipline', 
       id: item.id, 
       title: item.title,
-      isFreeLimit: isFreeUser 
+      isFreeLimit: isFree // Se for usuário gratuito, aplica o limite de questões
     });
   };
 
@@ -156,7 +162,7 @@ export default function App() {
     <div style={{ backgroundColor: '#f8f7f2', minHeight: '100vh', color: '#1f2937', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
       
       <Header 
-        userPlan={session?.user?.email === 'eletrica2020@hotmail.com' ? 'free' : 'premium'} 
+        userPlan={isPremium ? 'premium' : 'free'} 
         questionsUsed={questionsUsed} 
         onOpenPlans={() => alert('Funcionalidade de upgrade em breve!')} 
         onLogout={() => supabase.auth.signOut()} 
@@ -253,7 +259,7 @@ export default function App() {
             {filteredDisciplines.map((item) => (
               <div 
                 key={item.id} 
-                onClick={() => handleDisciplineClick(item, false)}
+                onClick={() => handleDisciplineClick(item)}
                 style={{ 
                   backgroundColor: '#e4eae3', 
                   border: '1px solid #c7d3c5', 
