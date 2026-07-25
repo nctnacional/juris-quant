@@ -17,7 +17,6 @@ export default function SimuladoView({ type, itemId, itemTitle, maxQuestions, on
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [showAnswer, setShowAnswer] = useState(false);
   
-  // Novos estados para controlar as respostas e o fim do simulado
   const [userAnswers, setUserAnswers] = useState<{ [index: number]: string }>({});
   const [isFinished, setIsFinished] = useState(false);
 
@@ -35,7 +34,7 @@ export default function SimuladoView({ type, itemId, itemTitle, maxQuestions, on
 
   const currentQ = questions[currentIndex];
 
-  // Função para salvar o progresso no Supabase quando finalizar o simulado
+  // Função corrigida para salvar na tabela correta "progresso do usuário"
   const saveProgressToDatabase = async (answeredCount: number) => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -43,9 +42,9 @@ export default function SimuladoView({ type, itemId, itemTitle, maxQuestions, on
 
       const userId = session.user.id;
 
-      // 1. Busca o registro atual do usuário
+      // 1. Busca o registro atual na tabela correta "progresso do usuário"
       const { data: currentProgress, error: fetchError } = await supabase
-        .from('user_progress')
+        .from('progresso do usuário')
         .select('questions_used')
         .eq('user_id', userId)
         .single();
@@ -60,7 +59,7 @@ export default function SimuladoView({ type, itemId, itemTitle, maxQuestions, on
 
       // 2. Atualiza ou insere o novo valor acumulado
       const { error: upsertError } = await supabase
-        .from('user_progress')
+        .from('progresso do usuário')
         .upsert(
           { user_id: userId, questions_used: newTotal, updated_at: new Date().toISOString() },
           { onConflict: 'user_id' }
@@ -75,12 +74,10 @@ export default function SimuladoView({ type, itemId, itemTitle, maxQuestions, on
   };
 
   const handleNext = () => {
-    // Salva a resposta escolhida para a questão atual
     if (selectedOption) {
       setUserAnswers(prev => {
         const updated = { ...prev, [currentIndex]: selectedOption };
         
-        // Se esta for a última questão, dispara o salvamento do progresso
         if (currentIndex >= questions.length - 1) {
           const totalAnswered = Object.keys(updated).length;
           saveProgressToDatabase(totalAnswered);
@@ -89,7 +86,6 @@ export default function SimuladoView({ type, itemId, itemTitle, maxQuestions, on
         return updated;
       });
     } else {
-      // Caso o usuário avance sem responder (embora haja trava se clicar direto, por segurança)
       if (currentIndex >= questions.length - 1) {
         const totalAnswered = Object.keys(userAnswers).length;
         saveProgressToDatabase(totalAnswered);
@@ -102,7 +98,7 @@ export default function SimuladoView({ type, itemId, itemTitle, maxQuestions, on
     if (currentIndex < questions.length - 1) {
       setCurrentIndex(currentIndex + 1);
     } else {
-      setIsFinished(true); // Chegou ao fim, ativa a tela de resultado
+      setIsFinished(true);
     }
   };
 

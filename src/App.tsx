@@ -62,6 +62,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [questionsUsed, setQuestionsUsed] = useState<number>(0);
+  const [userPlan, setUserPlan] = useState<string>('free'); // Padrão inicial free
   const [activeSimulado, setActiveSimulado] = useState<{
     type: 'discipline' | 'focus';
     id: string;
@@ -73,7 +74,7 @@ export default function App() {
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
       if (data.session) {
-        fetchUserProgress(data.session.user.id);
+        fetchUserData(data.session.user.id);
       }
       setLoading(false);
     });
@@ -81,7 +82,7 @@ export default function App() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, currentSession) => {
       setSession(currentSession);
       if (currentSession) {
-        fetchUserProgress(currentSession.user.id);
+        fetchUserData(currentSession.user.id);
       }
       setLoading(false);
     });
@@ -89,22 +90,35 @@ export default function App() {
     return () => subscription.unsubscribe();
   }, []);
 
-  const fetchUserProgress = async (userId: string) => {
+  // Busca o plano na tabela 'profiles' e o progresso na tabela 'progresso do usuário'
+  const fetchUserData = async (userId: string) => {
     try {
-      const { data, error } = await supabase
-        .from('user_progress')
+      // 1. Busca o plano na tabela profiles
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('plan')
+        .eq('id', userId)
+        .single();
+
+      if (profileData && profileData.plan) {
+        setUserPlan(profileData.plan); // 'free', 'intermediario' ou 'premium'
+      }
+
+      // 2. Busca o progresso de questões
+      const { data: progressData, error: progressError } = await supabase
+        .from('progresso do usuário')
         .select('questions_used')
         .eq('user_id', userId)
         .single();
 
-      if (data) {
-        setQuestionsUsed(data.questions_used);
-      } else if (error && error.code === 'PGRST116') {
-        await supabase.from('user_progress').insert([{ user_id: userId, questions_used: 0 }]);
+      if (progressData) {
+        setQuestionsUsed(progressData.questions_used);
+      } else if (progressError && progressError.code === 'PGRST116') {
+        await supabase.from('progresso do usuário').insert([{ user_id: userId, questions_used: 0 }]);
         setQuestionsUsed(0);
       }
     } catch (err) {
-      console.error('Erro ao buscar progresso:', err);
+      console.error('Erro ao buscar dados do usuário:', err);
     }
   };
 
@@ -126,16 +140,17 @@ export default function App() {
     );
   }
 
-  const userEmail = session?.user?.email;
-  const isPremium = userEmail === 'ncteletrica@gmail.com';
-  const isFree = userEmail !== 'ncteletrica@gmail.com' && userEmail !== 'eletrica2020@hotmail.com';
+  const isFree = userPlan === 'free';
+  const isIntermediario = userPlan === 'intermediario';
 
   const handleFocusClick = (item: FocusTarget) => {
-    if (userEmail === 'eletrica2020@hotmail.com' && item.id !== 'oab' && item.id !== 'tre') {
+    // Se for Plano Intermediário, restringe focos especiais exceto OAB e TRE
+    if (isIntermediario && item.id !== 'oab' && item.id !== 'tre') {
       alert('Seu plano atual ("Plano Disciplinas") dá acesso às disciplinas, OAB e TRE. Faça o upgrade para o Plano Completo para desbloquear as demais preparações especiais!');
       return;
     }
 
+    // Se for Plano Gratuito, bloqueia todas as áreas de foco especial
     if (isFree) {
       alert('Esta área de Foco Especial é exclusiva para planos superiores. Faça o upgrade para ter acesso completo!');
       return;
@@ -149,7 +164,7 @@ export default function App() {
       type: 'discipline', 
       id: item.id, 
       title: item.title,
-      isFreeLimit: isFree // Se for usuário gratuito, aplica o limite de questões
+      isFreeLimit: isFree // Aplica o limite de questões apenas se for Free
     });
   };
 
@@ -162,7 +177,7 @@ export default function App() {
     <div style={{ backgroundColor: '#f8f7f2', minHeight: '100vh', color: '#1f2937', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
       
       <Header 
-        userPlan={isPremium ? 'premium' : 'free'} 
+        userPlan={userPlan as any} 
         questionsUsed={questionsUsed} 
         onOpenPlans={() => alert('Funcionalidade de upgrade em breve!')} 
         onLogout={() => supabase.auth.signOut()} 

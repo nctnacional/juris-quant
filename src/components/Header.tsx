@@ -1,13 +1,19 @@
 import React from 'react';
 
 interface HeaderProps {
-  userPlan: 'free' | 'premium';
+  userPlan: 'free' | 'intermediario' | 'premium';
   questionsUsed?: number; // Quantas questões o usuário já respondeu ou visualizou
   onOpenPlans: () => void;
   onLogout: () => void;
 }
 
 export default function Header({ userPlan, questionsUsed = 0, onOpenPlans, onLogout }: HeaderProps) {
+  const getPlanName = () => {
+    if (userPlan === 'premium') return 'Plano Premium';
+    if (userPlan === 'intermediario') return 'Plano Disciplinas';
+    return 'Plano Gratuito';
+  };
+
   return (
     <header style={{
       backgroundColor: '#0a291c',
@@ -30,7 +36,7 @@ export default function Header({ userPlan, questionsUsed = 0, onOpenPlans, onLog
           <div style={{ textAlign: 'right' }}>
             <span style={{ display: 'block', fontSize: '0.7rem', color: '#e2c07d' }}>Plano Atual:</span>
             <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#ffffff' }}>
-              {userPlan === 'free' ? 'Plano Gratuito' : 'Plano Premium'}
+              {getPlanName()}
             </span>
           </div>
 
@@ -50,7 +56,8 @@ export default function Header({ userPlan, questionsUsed = 0, onOpenPlans, onLog
           )}
         </div>
 
-        {userPlan === 'free' && (
+        {/* Botão de Upgrade (aparece se não for Premium) */}
+        {userPlan !== 'premium' && (
           <button
             onClick={onOpenPlans}
             style={{
@@ -65,7 +72,7 @@ export default function Header({ userPlan, questionsUsed = 0, onOpenPlans, onLog
               textTransform: 'uppercase'
             }}
           >
-            Premium
+            {userPlan === 'intermediario' ? 'Upgrade Premium' : 'Premium'}
           </button>
         )}
 
