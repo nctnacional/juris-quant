@@ -20,6 +20,22 @@ on conflict (id) do update set plan = 'intermediario';
 
 
 
+para alterar o plano :
+
+update profiles
+set plan = 'premium'
+from auth.users
+where profiles.id = auth.users.id
+  and auth.users.email = 'eletrica2020@hotmail.com';
+
+update profiles
+set plan = 'intermediario'
+from auth.users
+where profiles.id = auth.users.id
+  and auth.users.email = 'eletrica2020@hotmail.com';
+
+
+
 
 
 

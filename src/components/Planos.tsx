@@ -102,7 +102,7 @@ export function ModalPlanos({ isOpen, onClose }: ModalPlanosProps) {
               </ul>
             </div>
             <button 
-              onClick={() => handleAssinar('https://mpago.la/2gCqJub')}
+              onClick={() => handleAssinar('https://mpago.la/1xgvLiQ')}
               style={{ 
                 width: '100%', 
                 padding: '0.7rem', 
