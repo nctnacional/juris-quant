@@ -1,5 +1,30 @@
          PARA ADICIONAR MANUALMENTE
 
+localizar usuário :   select id, email from auth.users;
+
+depois execute :
+
+-- Garante/Atualiza o ncteletrica@gmail.com como Premium
+
+insert into profiles (id, full_name, role, plan)
+values ('56150fe8-480c-41c9-84e2-69d51ea2774b', 'Renato (NCT)', 'user', 'premium')
+on conflict (id) do update set plan = 'premium';
+
+-- Garante/Atualiza o eletrica2020@hotmail.com como Intermediário
+
+insert into profiles (id, full_name, role, plan)
+values ('8134c8b9-b4ae-4a7f-b37f-32a718017bd6', 'Eletrica 2020', 'user', 'intermediario')
+on conflict (id) do update set plan = 'intermediario';
+
+
+
+
+
+
+
+
+
+
 PREMIUM 
 
 update profiles
@@ -19,16 +44,17 @@ where profiles.id = auth.users.id
 
 
 
--- Para alterar o plano de um usuário específico para Premium por e-mail:
+
+-- Define o ncteletrica@gmail.com como Premium
 update profiles
 set plan = 'premium'
-where id in (
-  select id from auth.users where email = 'seu_email_aqui@gmail.com'
-);
+from auth.users
+where profiles.id = auth.users.id
+  and auth.users.email = 'ncteletrica@gmail.com';
 
--- OU para alterar para o Plano Intermediário:
+-- Define o eletrica2020@hotmail.com como Intermediário
 update profiles
 set plan = 'intermediario'
-where id in (
-  select id from auth.users where email = 'seu_email_aqui@gmail.com'
-);
+from auth.users
+where profiles.id = auth.users.id
+  and auth.users.email = 'eletrica2020@hotmail.com';
