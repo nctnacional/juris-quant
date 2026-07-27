@@ -17,9 +17,9 @@ export interface Question {
 }
 
 export async function fetchQuestions(filtro?: string): Promise<Question[]> {
-  console.log('Buscando questões estritas para o filtro:', filtro);
+  console.log('Buscando questões , questoes estritas para o filtro:', filtro);
 
-  let query = supabase.from('questões').select('*');
+  let query = supabase.from('questões questoes').select('*');
 
   if (filtro && filtro.trim() !== '') {
     let termoBusca = filtro.trim();
@@ -64,6 +64,6 @@ export async function fetchQuestions(filtro?: string): Promise<Question[]> {
     return [];
   }
 
-  console.log('Questões específicas encontradas:', data.length);
+  console.log('Questões Questoes específicas encontradas:', data.length);
   return data as Question[];
 }
