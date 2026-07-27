@@ -69,8 +69,8 @@ export async function fetchQuestions(filtro?: string): Promise<Question[]> {
     }
 
     const [res1, res2] = await Promise.all([
-      q1.limit(200),
-      q2.limit(200)
+      q1.limit(2000),
+      q2.limit(2000)
     ]);
 
     if (res1.data) todasQuestoes.push(...(res1.data as Question[]));
