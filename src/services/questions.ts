@@ -17,53 +17,82 @@ export interface Question {
 }
 
 export async function fetchQuestions(filtro?: string): Promise<Question[]> {
-  console.log('Buscando questões , questoes estritas para o filtro:', filtro);
+  console.log('Filtro recebido:', filtro);
 
-  let query = supabase.from('questões questoes').select('*');
+  // Se vier um filtro de card (ex: "Concurso TRE / TSE"), mapeamos para o termo real da disciplina
+  let termosBusca: string[] = [];
 
   if (filtro && filtro.trim() !== '') {
-    let termoBusca = filtro.trim();
-    const upperFiltro = termoBusca.toUpperCase();
+    const f = filtro.toUpperCase();
+    
+    if (f.includes('TRE') || f.includes('TSE') || f.includes('ELEITORAL')) {
+      termosBusca = ['Eleitoral', 'Direito Eleitoral'];
+    } else if (f.includes('OAB') || f.includes('ÉTICA')) {
+      termosBusca = ['Ética', 'Exame de Ordem'];
+    } else if (f.includes('TRIBUNAL') || f.includes('JUSTIÇA') || f.includes('TJ')) {
+      termosBusca = ['Processo', 'Civil', 'Judiciária', 'Direito'];
+    } else if (f.includes('MINISTÉRIO PÚBLICO') || f.includes('MP')) {
+      termosBusca = ['Penal', 'Processo Penal', 'Difusos', 'Coletivos', 'ECA'];
+    } else if (f.includes('PROCURADORIA') || f.includes('PGE') || f.includes('AGU')) {
+      termosBusca = ['Tributário', 'Administrativo', 'Financeiro'];
+    } else if (f.includes('FEDERAL') || f.includes('TRF')) {
+      termosBusca = ['Previdenciário', 'Constitucional', 'Tributário'];
+    } else if (f.includes('SUPERIORES') || f.includes('STJ') || f.includes('STF')) {
+      termosBusca = ['Constitucional', 'Jurisprudência', 'Súmulas'];
+    } else if (f.includes('DEFENSORIA') || f.includes('DPE')) {
+      termosBusca = ['Humanos', 'Execução Penal', 'Consumidor', 'ECA'];
+    } else if (f.includes('POLICIAIS') || f.includes('DELEGADO')) {
+      termosBusca = ['Penal', 'Criminologia', 'Medicina Legal', 'Leis Penais'];
+    } else {
+      // Se não cair em nenhum card específico, busca o próprio texto digitado
+      termosBusca = [filtro.trim()];
+    }
+  } else {
+    // Se nenhum filtro for passado, traz tudo (limitado)
+    termosBusca = [''];
+  }
 
-    // Mapeamento específico para cada Concurso / Carreira do seu menu
-    if (upperFiltro.includes('TRE') || upperFiltro.includes('TSE')) {
-      termoBusca = 'Eleitoral'; // Ajuste aqui se sua disciplina se chamar diferente, ex: 'Direito Eleitoral'
-    } else if (upperFiltro.includes('OAB')) {
-      termoBusca = 'Ética';
-    } else if (upperFiltro.includes('TJ') || upperFiltro.includes('TRIBUNAIS DE JUSTIÇA')) {
-      termoBusca = 'Processo';
-    } else if (upperFiltro.includes('MP') || upperFiltro.includes('MINISTÉRIO PÚBLICO')) {
-      termoBusca = 'Penal';
-    } else if (upperFiltro.includes('PROCURADORIA') || upperFiltro.includes('AGU')) {
-      termoBusca = 'Tributário';
-    } else if (upperFiltro.includes('FEDERAL') || upperFiltro.includes('TRF')) {
-      termoBusca = 'Previdenciário';
-    } else if (upperFiltro.includes('SUPERIORES') || upperFiltro.includes('STJ')) {
-      termoBusca = 'Constitucional';
-    } else if (upperFiltro.includes('DEFENSORIA')) {
-      termoBusca = 'Humanos';
-    } else if (upperFiltro.includes('POLICIAIS') || upperFiltro.includes('DELEGADO')) {
-      termoBusca = 'Penal';
+  let todasQuestoes: Question[] = [];
+
+  // Busca para cada termo mapeado nas duas tabelas
+  for (const termo of termosBusca) {
+    // Consulta 1: Tabela 'questões'
+    let q1 = supabase.from('questões').select('*');
+    if (termo !== '') {
+      q1 = q1.or(`disciplina.ilike.%${termo}%,materia.ilike.%${termo}%`);
     }
 
-    // Busca exata e restrita nas colunas disciplina ou materia
-    query = query.or(`disciplina.ilike.%${termoBusca}%,materia.ilike.%${termoBusca}%`);
+    // Consulta 2: Tabela 'questoes'
+    let q2 = supabase.from('questoes').select('*');
+    if (termo !== '') {
+      q2 = q2.or(`disciplina.ilike.%${termo}%,materia.ilike.%${termo}%`);
+    }
+
+    const [res1, res2] = await Promise.all([
+      q1.limit(200),
+      q2.limit(200)
+    ]);
+
+    if (res1.data) todasQuestoes.push(...(res1.data as Question[]));
+    if (res2.data) todasQuestoes.push(...(res2.data as Question[]));
   }
 
-  const { data, error } = await query.limit(2000);
-
-  if (error) {
-    console.error('ERRO DO SUPABASE:', error.message, error.details, error.hint);
-    return [];
+  // Se mesmo assim não encontrar nada com os termos mapeados, faz uma busca coringa global pelo filtro original
+  if (todasQuestoes.length === 0 && filtro && filtro.trim() !== '') {
+    const tGeral = filtro.trim();
+    const [resG1, resG2] = await Promise.all([
+      supabase.from('questões').select('*').or(`disciplina.ilike.%${tGeral}%,materia.ilike.%${tGeral}%,enunciado.ilike.%${tGeral}%`).limit(200),
+      supabase.from('questoes').select('*').or(`disciplina.ilike.%${tGeral}%,materia.ilike.%${tGeral}%,enunciado.ilike.%${tGeral}%`).limit(200)
+    ]);
+    if (resG1.data) todasQuestoes.push(...(resG1.data as Question[]));
+    if (resG2.data) todasQuestoes.push(...(resG2.data as Question[]));
   }
 
-  // Se realmente não houver questões para esse filtro específico, retorna vazio
-  // para você saber que precisa cadastrar questões para essa matéria/concurso no Supabase.
-  if (!data || data.length === 0) {
-    console.warn('Nenhuma questão encontrada especificamente para:', filtro);
-    return [];
-  }
+  // Remove duplicadas com base no enunciado
+  const questoesUnicas = Array.from(
+    new Map(todasQuestoes.map(q => [q.enunciado, q])).values()
+  );
 
-  console.log('Questões Questoes específicas encontradas:', data.length);
-  return data as Question[];
+  console.log(`Total final de questões unicas carregadas:`, questoesUnicas.length);
+  return questoesUnicas;
 }
