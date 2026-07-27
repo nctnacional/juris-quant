@@ -1,0 +1,11 @@
+consultar quantidade:
+
+SELECT COUNT(*) AS total_questoes FROM questões;
+
+
+consultar se tem questões repetidas :
+
+SELECT enunciado, COUNT(*) AS quantidade
+FROM questões
+GROUP BY enunciado
+HAVING COUNT(*) > 1;

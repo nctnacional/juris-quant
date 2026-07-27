@@ -50,7 +50,7 @@ export async function fetchQuestions(filtro?: string): Promise<Question[]> {
     query = query.or(`disciplina.ilike.%${termoBusca}%,materia.ilike.%${termoBusca}%`);
   }
 
-  const { data, error } = await query.limit(30);
+  const { data, error } = await query.limit(2000);
 
   if (error) {
     console.error('ERRO DO SUPABASE:', error.message, error.details, error.hint);
