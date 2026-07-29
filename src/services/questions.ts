@@ -37,10 +37,16 @@ export async function fetchQuestions(filtro?: string): Promise<Question[]> {
       termosBusca = ['Tributário', 'Administrativo', 'Financeiro'];
     } else if (f.includes('FEDERAL') || f.includes('TRF')) {
       termosBusca = ['Previdenciário', 'Constitucional', 'Tributário'];
+
     } else if (f.includes('SUPERIORES') || f.includes('STJ') || f.includes('STF')) {
       termosBusca = ['Constitucional', 'Jurisprudência', 'Súmulas'];
+
     } else if (f.includes('DEFENSORIA') || f.includes('DPE')) {
       termosBusca = ['Humanos', 'Execução Penal', 'Consumidor', 'ECA'];
+
+      } else if (f.includes('DEFENSORIA') || f.includes('DELEGADO')) {
+      termosBusca = ['Trabalho', 'Conciliação', 'Arbitragem', 'Criança', 'ECA'];
+
     } else if (f.includes('POLICIAIS') || f.includes('DELEGADO')) {
       termosBusca = ['Penal', 'Criminologia', 'Medicina Legal', 'Leis Penais'];
     } else {
