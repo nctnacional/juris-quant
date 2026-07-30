@@ -75,8 +75,8 @@ export async function fetchQuestions(filtro?: string): Promise<Question[]> {
     }
 
     const [res1, res2] = await Promise.all([
-      q1.limit(2000),
-      q2.limit(2000)
+      q1.limit(20000),
+      q2.limit(20000)
     ]);
 
     if (res1.data) todasQuestoes.push(...(res1.data as Question[]));
@@ -87,8 +87,8 @@ export async function fetchQuestions(filtro?: string): Promise<Question[]> {
   if (todasQuestoes.length === 0 && filtro && filtro.trim() !== '') {
     const tGeral = filtro.trim();
     const [resG1, resG2] = await Promise.all([
-      supabase.from('questões').select('*').or(`disciplina.ilike.%${tGeral}%,materia.ilike.%${tGeral}%,enunciado.ilike.%${tGeral}%`).limit(200),
-      supabase.from('questoes').select('*').or(`disciplina.ilike.%${tGeral}%,materia.ilike.%${tGeral}%,enunciado.ilike.%${tGeral}%`).limit(200)
+      supabase.from('questões').select('*').or(`disciplina.ilike.%${tGeral}%,materia.ilike.%${tGeral}%,enunciado.ilike.%${tGeral}%`).limit(20000),
+      supabase.from('questoes').select('*').or(`disciplina.ilike.%${tGeral}%,materia.ilike.%${tGeral}%,enunciado.ilike.%${tGeral}%`).limit(20000)
     ]);
     if (resG1.data) todasQuestoes.push(...(resG1.data as Question[]));
     if (resG2.data) todasQuestoes.push(...(resG2.data as Question[]));
