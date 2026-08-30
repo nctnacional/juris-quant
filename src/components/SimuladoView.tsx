@@ -34,7 +34,7 @@ export default function SimuladoView({ type, itemId, itemTitle, maxQuestions, on
 
   const currentQ = questions[currentIndex];
 
-  // Função corrigida para salvar na tabela correta "progresso do usuário"
+  // Função para salvar na tabela correta "progresso do usuário"
   const saveProgressToDatabase = async (answeredCount: number) => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -73,35 +73,6 @@ export default function SimuladoView({ type, itemId, itemTitle, maxQuestions, on
     }
   };
 
-  const handleNext = () => {
-    if (selectedOption) {
-      setUserAnswers(prev => {
-        const updated = { ...prev, [currentIndex]: selectedOption };
-        
-        if (currentIndex >= questions.length - 1) {
-          const totalAnswered = Object.keys(updated).length;
-          saveProgressToDatabase(totalAnswered);
-        }
-        
-        return updated;
-      });
-    } else {
-      if (currentIndex >= questions.length - 1) {
-        const totalAnswered = Object.keys(userAnswers).length;
-        saveProgressToDatabase(totalAnswered);
-      }
-    }
-
-    setSelectedOption(null);
-    setShowAnswer(false);
-
-    if (currentIndex < questions.length - 1) {
-      setCurrentIndex(currentIndex + 1);
-    } else {
-      setIsFinished(true);
-    }
-  };
-
   const handleAnswerClick = (letter: string) => {
     setSelectedOption(letter);
   };
@@ -111,6 +82,24 @@ export default function SimuladoView({ type, itemId, itemTitle, maxQuestions, on
       setUserAnswers(prev => ({ ...prev, [currentIndex]: selectedOption }));
     }
     setShowAnswer(true);
+  };
+
+  const handleNext = () => {
+    const updatedAnswers = { ...userAnswers };
+    if (selectedOption) {
+      updatedAnswers[currentIndex] = selectedOption;
+      setUserAnswers(updatedAnswers);
+    }
+
+    if (currentIndex >= questions.length - 1) {
+      const totalAnswered = Object.keys(updatedAnswers).length;
+      saveProgressToDatabase(totalAnswered);
+      setIsFinished(true);
+    } else {
+      setSelectedOption(null);
+      setShowAnswer(false);
+      setCurrentIndex(currentIndex + 1);
+    }
   };
 
   if (loading) {
@@ -124,11 +113,15 @@ export default function SimuladoView({ type, itemId, itemTitle, maxQuestions, on
   // TELA DE RESULTADO FINAL
   if (isFinished) {
     const totalQuestions = questions.length;
+    
     const correctCount = questions.reduce((acc, q, index) => {
-      return userAnswers[index] === q.resposta_correta ? acc + 1 : acc;
+      const userAns = String(userAnswers[index] || '').trim().toLowerCase();
+      const correctAns = String(q.resposta_correta || '').trim().toLowerCase();
+      return userAns === correctAns ? acc + 1 : acc;
     }, 0);
-    const percentage = Math.round((correctCount / totalQuestions) * 100);
 
+    const percentage = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0;
+    
     return (
       <div style={{ maxWidth: '800px', margin: '2rem auto', padding: '1.5rem' }}>
         <button 
