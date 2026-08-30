@@ -207,7 +207,7 @@ export default function SimuladoView({ type, itemId, itemTitle, maxQuestions, on
             {['a', 'b', 'c', 'd'].map((letter) => {
               const optionKey = `opcao_${letter}` as keyof Question;
               const isSelected = selectedOption === letter;
-              const isCorrect = currentQ.resposta_correta === letter;
+              const isCorrect = currentQ.resposta_correta?.trim().toLowerCase() === letter.toLowerCase();
 
               let bgColor = '#f9fafb';
               let borderColor = '#e5e7eb';

@@ -4,7 +4,7 @@ localizar usuário :   select id, email from auth.users;
 
 depois execute :
 
--- Garante/Atualiza o ncteletrica@gmail.com como Premium
+-- Garante/Atualiza o eletrica2020@hotmail.com como Premium
 
 insert into profiles (id, full_name, role, plan)
 values ('56150fe8-480c-41c9-84e2-69d51ea2774b', 'Renato (NCT)', 'user', 'premium')
@@ -34,6 +34,10 @@ from auth.users
 where profiles.id = auth.users.id
   and auth.users.email = 'eletrica2020@hotmail.com';
 
+
+excluir questões :
+
+DELETE FROM questões WHERE disciplina = 'Direito Processual do Trabalho';
 
 
 
