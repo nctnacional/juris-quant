@@ -19,12 +19,12 @@ export interface Question {
 export async function fetchQuestions(filtro?: string): Promise<Question[]> {
   console.log('Filtro recebido:', filtro);
 
-  // Se vier um filtro de card (ex: "Concurso TRE / TSE"), mapeamos para o termo real da disciplina
   let termosBusca: string[] = [];
 
   if (filtro && filtro.trim() !== '') {
     const f = filtro.toUpperCase();
     
+    // Se o filtro vier com o nome direto ou ID correspondente
     if (f.includes('TRE') || f.includes('TSE') || f.includes('ELEITORAL')) {
       termosBusca = ['Eleitoral', 'Direito Eleitoral'];
     } else if (f.includes('OAB') || f.includes('ÉTICA')) {
@@ -32,43 +32,40 @@ export async function fetchQuestions(filtro?: string): Promise<Question[]> {
     } else if (f.includes('TRIBUNAL') || f.includes('JUSTIÇA') || f.includes('TJ')) {
       termosBusca = ['Processo', 'Civil', 'Judiciária', 'Direito'];
     } else if (f.includes('MINISTÉRIO PÚBLICO') || f.includes('MP')) {
-      termosBusca = ['Penal', 'Processo Penal', 'Difusos', 'Coletivos', 'ECA'];
+      termosBusca = ['Penal', 'Processo Penal', 'Difusos', 'Coletivos', 'ECA', 'Criança'];
     } else if (f.includes('PROCURADORIA') || f.includes('PGE') || f.includes('AGU')) {
       termosBusca = ['Tributário', 'Administrativo', 'Financeiro'];
     } else if (f.includes('FEDERAL') || f.includes('TRF')) {
       termosBusca = ['Previdenciário', 'Constitucional', 'Tributário'];
-
     } else if (f.includes('SUPERIORES') || f.includes('STJ') || f.includes('STF')) {
       termosBusca = ['Constitucional', 'Jurisprudência', 'Súmulas'];
-
     } else if (f.includes('DEFENSORIA') || f.includes('DPE')) {
-      termosBusca = ['Humanos', 'Execução Penal', 'Consumidor', 'ECA'];
-
-      } else if (f.includes('DEFENSORIA') || f.includes('DELEGADO')) {
-      termosBusca = ['Trabalho', 'Conciliação', 'Arbitragem', 'Criança', 'ECA'];
-
+      termosBusca = ['Humanos', 'Execução Penal', 'Consumidor', 'ECA', 'Criança'];
     } else if (f.includes('POLICIAIS') || f.includes('DELEGADO')) {
       termosBusca = ['Penal', 'Criminologia', 'Medicina Legal', 'Leis Penais'];
     } else {
-      // Se não cair em nenhum card específico, busca o próprio texto digitado
-      termosBusca = [filtro.trim()];
+      // ADICIONADO: Garantia explícita para cobrir ECA e Mediação por qualquer termo digitado ou vindo do card
+      termosBusca = [
+        filtro.trim(), 
+        'Criança e do Adolescente', 
+        'Mediação, Conciliação e Arbitragem'
+      ];
     }
   } else {
-    // Se nenhum filtro for passado, traz tudo (limitado)
     termosBusca = [''];
   }
 
   let todasQuestoes: Question[] = [];
 
-  // Busca para cada termo mapeado nas duas tabelas
-  for (const termo of termosBusca) {
-    // Consulta 1: Tabela 'questões'
+  // Remove termos duplicados para otimizar as buscas
+  const termosUnicos = Array.from(new Set(termosBusca));
+
+  for (const termo of termosUnicos) {
     let q1 = supabase.from('questões').select('*');
     if (termo !== '') {
       q1 = q1.or(`disciplina.ilike.%${termo}%,materia.ilike.%${termo}%`);
     }
 
-    // Consulta 2: Tabela 'questoes'
     let q2 = supabase.from('questoes').select('*');
     if (termo !== '') {
       q2 = q2.or(`disciplina.ilike.%${termo}%,materia.ilike.%${termo}%`);
@@ -83,7 +80,7 @@ export async function fetchQuestions(filtro?: string): Promise<Question[]> {
     if (res2.data) todasQuestoes.push(...(res2.data as Question[]));
   }
 
-  // Se mesmo assim não encontrar nada com os termos mapeados, faz uma busca coringa global pelo filtro original
+  // Busca coringa global caso ainda retorne vazio
   if (todasQuestoes.length === 0 && filtro && filtro.trim() !== '') {
     const tGeral = filtro.trim();
     const [resG1, resG2] = await Promise.all([
@@ -94,7 +91,6 @@ export async function fetchQuestions(filtro?: string): Promise<Question[]> {
     if (resG2.data) todasQuestoes.push(...(resG2.data as Question[]));
   }
 
-  // Remove duplicadas com base no enunciado
   const questoesUnicas = Array.from(
     new Map(todasQuestoes.map(q => [q.enunciado, q])).values()
   );
