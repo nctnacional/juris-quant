@@ -24,7 +24,7 @@ export async function fetchQuestions(filtro?: string): Promise<Question[]> {
   if (filtro && filtro.trim() !== '') {
     const f = filtro.toUpperCase();
     
-    // Mapeamento exato baseado nos blocos da sua interface e disciplinas
+    // Focos de Preparação Especial
     if (f.includes('OAB') || f.includes('EXAME DE ORDEM')) {
       termosBusca = ['Ética', 'Constitucional', 'Civil', 'Penal', 'Trabalhista', 'Consumidor', 'OAB', 'Exame de Ordem'];
     } else if (f.includes('TRE') || f.includes('TSE') || f.includes('ELEITORAL')) {
@@ -44,8 +44,13 @@ export async function fetchQuestions(filtro?: string): Promise<Question[]> {
     } else if (f.includes('DELEGADO') || f.includes('POLICIAIS')) {
       termosBusca = ['Penal', 'Criminologia', 'Medicina Legal', 'Leis Penais', 'Processo Penal'];
     } else {
-      // Para disciplinas diretas (ex: "Direito Ambiental", "ECA", etc.)
+      // Disciplinas Individuais: busca pelo termo exato e também por palavras-chave parciais se necessário
       termosBusca = [filtro.trim()];
+      if (f.includes('ECA')) {
+        termosBusca.push('Criança e do Adolescente', 'ECA');
+      } else if (f.includes('MEDIAÇÃO')) {
+        termosBusca.push('Mediação, Conciliação e Arbitragem', 'Arbitragem');
+      }
     }
   } else {
     termosBusca = [''];
@@ -54,7 +59,7 @@ export async function fetchQuestions(filtro?: string): Promise<Question[]> {
   let todasQuestoes: Question[] = [];
   const termosUnicos = Array.from(new Set(termosBusca));
 
-  // Executa a busca nas tabelas do Supabase ('questoes' e 'questões')
+  // Executa a busca nas duas tabelas do Supabase
   for (const termo of termosUnicos) {
     const tabelas = ['questoes', 'questões'];
     
@@ -69,12 +74,12 @@ export async function fetchQuestions(filtro?: string): Promise<Question[]> {
           todasQuestoes.push(...(data as Question[]));
         }
       } catch (e) {
-        // Ignora se a tabela não existir ou falhar
+        // Ignora erros de tabelas inexistentes
       }
     }
   }
 
-  // Remove questões duplicadas baseando-se no enunciado único
+  // Remove questões duplicadas pelo enunciado
   const questoesUnicas = Array.from(
     new Map(todasQuestoes.map(q => [q.enunciado, q])).values()
   );
