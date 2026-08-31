@@ -19,78 +19,27 @@ export interface Question {
 export async function fetchQuestions(filtro?: string): Promise<Question[]> {
   console.log('Filtro recebido:', filtro);
 
-  let termosBusca: string[] = [];
+  let termoBusca = filtro ? filtro.trim() : '';
 
-  if (filtro && filtro.trim() !== '') {
-    const f = filtro.toUpperCase();
-    
-    // Se o filtro vier com o nome direto ou ID correspondente
-    if (f.includes('TRE') || f.includes('TSE') || f.includes('ELEITORAL')) {
-      termosBusca = ['Eleitoral', 'Direito Eleitoral'];
-    } else if (f.includes('OAB') || f.includes('ÉTICA')) {
-      termosBusca = ['Ética', 'Exame de Ordem'];
-    } else if (f.includes('TRIBUNAL') || f.includes('JUSTIÇA') || f.includes('TJ')) {
-      termosBusca = ['Processo', 'Civil', 'Judiciária', 'Direito'];
-    } else if (f.includes('MINISTÉRIO PÚBLICO') || f.includes('MP')) {
-      termosBusca = ['Penal', 'Processo Penal', 'Difusos', 'Coletivos', 'ECA', 'Criança'];
-    } else if (f.includes('PROCURADORIA') || f.includes('PGE') || f.includes('AGU')) {
-      termosBusca = ['Tributário', 'Administrativo', 'Financeiro'];
-    } else if (f.includes('FEDERAL') || f.includes('TRF')) {
-      termosBusca = ['Previdenciário', 'Constitucional', 'Tributário'];
-    } else if (f.includes('SUPERIORES') || f.includes('STJ') || f.includes('STF')) {
-      termosBusca = ['Constitucional', 'Jurisprudência', 'Súmulas'];
-    } else if (f.includes('DEFENSORIA') || f.includes('DPE')) {
-      termosBusca = ['Humanos', 'Execução Penal', 'Consumidor', 'ECA', 'Criança'];
-    } else if (f.includes('POLICIAIS') || f.includes('DELEGADO')) {
-      termosBusca = ['Penal', 'Criminologia', 'Medicina Legal', 'Leis Penais'];
-    } else {
-      // ADICIONADO: Garantia explícita para cobrir ECA e Mediação por qualquer termo digitado ou vindo do card
-      termosBusca = [
-        filtro.trim(), 
-        'Criança e do Adolescente', 
-        'Mediação, Conciliação e Arbitragem'
-      ];
-    }
-  } else {
-    termosBusca = [''];
+  // Consultas limpas focando estritamente no termo exato enviado, sem misturar matérias
+  let q1 = supabase.from('questões').select('*');
+  let q2 = supabase.from('questoes').select('*');
+
+  if (termoBusca !== '') {
+    q1 = q1.or(`disciplina.ilike.%${termoBusca}%,materia.ilike.%${termoBusca}%`);
+    q2 = q2.or(`disciplina.ilike.%${termoBusca}%,materia.ilike.%${termoBusca}%`);
   }
+
+  const [res1, res2] = await Promise.all([
+    q1.limit(20000),
+    q2.limit(20000)
+  ]);
 
   let todasQuestoes: Question[] = [];
+  if (res1.data) todasQuestoes.push(...(res1.data as Question[]));
+  if (res2.data) todasQuestoes.push(...(res2.data as Question[]));
 
-  // Remove termos duplicados para otimizar as buscas
-  const termosUnicos = Array.from(new Set(termosBusca));
-
-  for (const termo of termosUnicos) {
-    let q1 = supabase.from('questões').select('*');
-    if (termo !== '') {
-      q1 = q1.or(`disciplina.ilike.%${termo}%,materia.ilike.%${termo}%`);
-    }
-
-    let q2 = supabase.from('questoes').select('*');
-    if (termo !== '') {
-      q2 = q2.or(`disciplina.ilike.%${termo}%,materia.ilike.%${termo}%`);
-    }
-
-    const [res1, res2] = await Promise.all([
-      q1.limit(20000),
-      q2.limit(20000)
-    ]);
-
-    if (res1.data) todasQuestoes.push(...(res1.data as Question[]));
-    if (res2.data) todasQuestoes.push(...(res2.data as Question[]));
-  }
-
-  // Busca coringa global caso ainda retorne vazio
-  if (todasQuestoes.length === 0 && filtro && filtro.trim() !== '') {
-    const tGeral = filtro.trim();
-    const [resG1, resG2] = await Promise.all([
-      supabase.from('questões').select('*').or(`disciplina.ilike.%${tGeral}%,materia.ilike.%${tGeral}%,enunciado.ilike.%${tGeral}%`).limit(20000),
-      supabase.from('questoes').select('*').or(`disciplina.ilike.%${tGeral}%,materia.ilike.%${tGeral}%,enunciado.ilike.%${tGeral}%`).limit(20000)
-    ]);
-    if (resG1.data) todasQuestoes.push(...(resG1.data as Question[]));
-    if (resG2.data) todasQuestoes.push(...(resG2.data as Question[]));
-  }
-
+  // Remove questões duplicadas baseando-se no enunciado
   const questoesUnicas = Array.from(
     new Map(todasQuestoes.map(q => [q.enunciado, q])).values()
   );
@@ -98,4 +47,3 @@ export async function fetchQuestions(filtro?: string): Promise<Question[]> {
   console.log(`Total final de questões unicas carregadas:`, questoesUnicas.length);
   return questoesUnicas;
 }
-
