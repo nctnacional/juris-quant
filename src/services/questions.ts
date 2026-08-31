@@ -20,26 +20,37 @@ export async function fetchQuestions(filtro?: string): Promise<Question[]> {
   console.log('Filtro recebido:', filtro);
 
   let termoBusca = filtro ? filtro.trim() : '';
+  let todasQuestoes: Question[] = [];
 
-  // Consultas limpas focando estritamente no termo exato enviado, sem misturar matérias
-  let q1 = supabase.from('questões').select('*');
-  let q2 = supabase.from('questoes').select('*');
-
-  if (termoBusca !== '') {
-    q1 = q1.or(`disciplina.ilike.%${termoBusca}%,materia.ilike.%${termoBusca}%`);
-    q2 = q2.or(`disciplina.ilike.%${termoBusca}%,materia.ilike.%${termoBusca}%`);
+  // Tenta buscar na tabela 'questoes' (sem acento)
+  try {
+    let q1 = supabase.from('questoes').select('*');
+    if (termoBusca !== '') {
+      q1 = q1.or(`disciplina.ilike.%${termoBusca}%,materia.ilike.%${termoBusca}%`);
+    }
+    const { data: res1, error: err1 } = await q1.limit(20000);
+    if (!err1 && res1) {
+      todasQuestoes.push(...(res1 as Question[]));
+    }
+  } catch (e) {
+    // Ignora se a tabela não existir ou falhar por permissão
   }
 
-  const [res1, res2] = await Promise.all([
-    q1.limit(20000),
-    q2.limit(20000)
-  ]);
+  // Tenta buscar na tabela 'questões' (com acento)
+  try {
+    let q2 = supabase.from('questões').select('*');
+    if (termoBusca !== '') {
+      q2 = q2.or(`disciplina.ilike.%${termoBusca}%,materia.ilike.%${termoBusca}%`);
+    }
+    const { data: res2, error: err2 } = await q2.limit(20000);
+    if (!err2 && res2) {
+      todasQuestoes.push(...(res2 as Question[]));
+    }
+  } catch (e) {
+    // Ignora se a tabela não existir ou falhar por permissão
+  }
 
-  let todasQuestoes: Question[] = [];
-  if (res1.data) todasQuestoes.push(...(res1.data as Question[]));
-  if (res2.data) todasQuestoes.push(...(res2.data as Question[]));
-
-  // Remove questões duplicadas baseando-se no enunciado
+  // Remove questões duplicadas baseando-se no enunciado unificado
   const questoesUnicas = Array.from(
     new Map(todasQuestoes.map(q => [q.enunciado, q])).values()
   );
