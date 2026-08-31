@@ -98,3 +98,4 @@ export async function fetchQuestions(filtro?: string): Promise<Question[]> {
   console.log(`Total final de questões unicas carregadas:`, questoesUnicas.length);
   return questoesUnicas;
 }
+
