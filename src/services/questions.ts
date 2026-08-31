@@ -19,67 +19,54 @@ export interface Question {
 export async function fetchQuestions(filtro?: string): Promise<Question[]> {
   console.log('Filtro recebido:', filtro);
 
-  let termosBusca: string[] = [];
-
-  if (filtro && filtro.trim() !== '') {
-    const f = filtro.toUpperCase();
-    
-    // Focos de Preparação Especial
-    if (f.includes('OAB') || f.includes('EXAME DE ORDEM')) {
-      termosBusca = ['Ética', 'Constitucional', 'Civil', 'Penal', 'Trabalhista', 'Consumidor', 'OAB', 'Exame de Ordem'];
-    } else if (f.includes('TRE') || f.includes('TSE') || f.includes('ELEITORAL')) {
-      termosBusca = ['Eleitoral', 'Direito Eleitoral', 'Constitucional', 'Administrativo'];
-    } else if (f.includes('TRIBUNAIS DE JUSTIÇA') || f.includes('TJ')) {
-      termosBusca = ['Processo Civil', 'Processo Penal', 'Organização Judiciária', 'Civil', 'Penal'];
-    } else if (f.includes('MINISTÉRIO PÚBLICO') || f.includes(' MP ')) {
-      termosBusca = ['Penal', 'Processo Penal', 'ECA', 'Criança', 'Difusos', 'Coletivos'];
-    } else if (f.includes('PROCURADORIA') || f.includes('PGE') || f.includes('PGM') || f.includes('AGU')) {
-      termosBusca = ['Administrativo', 'Tributário', 'Financeiro', 'Processo Civil', 'Constitucional'];
-    } else if (f.includes('FEDERAL') || f.includes('TRF')) {
-      termosBusca = ['Previdenciário', 'Constitucional', 'Tributário'];
-    } else if (f.includes('STJ') || f.includes('STF') || f.includes('TRIBUNAIS SUPERIORES')) {
-      termosBusca = ['Constitucional', 'Jurisprudência', 'Súmulas', 'Controle'];
-    } else if (f.includes('DEFENSORIA') || f.includes('DPE') || f.includes('DPU')) {
-      termosBusca = ['Humanos', 'Execução Penal', 'Consumidor', 'ECA', 'Criança', 'Tutela Coletiva'];
-    } else if (f.includes('DELEGADO') || f.includes('POLICIAIS')) {
-      termosBusca = ['Penal', 'Criminologia', 'Medicina Legal', 'Leis Penais', 'Processo Penal'];
-    } else {
-      // Disciplinas Individuais: busca pelo termo exato e também por palavras-chave parciais se necessário
-      termosBusca = [filtro.trim()];
-      if (f.includes('ECA')) {
-        termosBusca.push('Criança e do Adolescente', 'ECA');
-      } else if (f.includes('MEDIAÇÃO')) {
-        termosBusca.push('Mediação, Conciliação e Arbitragem', 'Arbitragem');
-      }
-    }
-  } else {
-    termosBusca = [''];
-  }
-
+  let termoBusca = filtro ? filtro.trim() : '';
   let todasQuestoes: Question[] = [];
-  const termosUnicos = Array.from(new Set(termosBusca));
 
-  // Executa a busca nas duas tabelas do Supabase
-  for (const termo of termosUnicos) {
-    const tabelas = ['questoes', 'questões'];
-    
-    for (const tabela of tabelas) {
-      try {
-        let query = supabase.from(tabela).select('*');
-        if (termo !== '') {
-          query = query.or(`disciplina.ilike.%${termo}%,materia.ilike.%${termo}%,banca.ilike.%${termo}%`);
+  const tabelas = ['questoes', 'questões'];
+
+  for (const tabela of tabelas) {
+    try {
+      let query = supabase.from(tabela).select('*');
+      
+      if (termoBusca !== '') {
+        const f = termoBusca.toUpperCase();
+        
+        if (f.includes('OAB') || f.includes('EXAME DE ORDEM')) {
+          query = query.or('disciplina.ilike.%Ética%,disciplina.ilike.%Constitucional%,disciplina.ilike.%Civil%,disciplina.ilike.%Penal%,disciplina.ilike.%Trabalhista%,disciplina.ilike.%Consumidor%,disciplina.ilike.%OAB%,materia.ilike.%Ética%,materia.ilike.%Constitucional%,materia.ilike.%Civil%,materia.ilike.%Penal%,materia.ilike.%Trabalhista%,materia.ilike.%Consumidor%,materia.ilike.%OAB%');
+        } else if (f.includes('TRE') || f.includes('TSE') || f.includes('ELEITORAL')) {
+          query = query.or('disciplina.ilike.%Eleitoral%,materia.ilike.%Eleitoral%');
+        } else if (f.includes('TRIBUNAIS DE JUSTIÇA') || f.includes('TJ')) {
+          query = query.or('disciplina.ilike.%Processo Civil%,disciplina.ilike.%Processo Penal%,disciplina.ilike.%Civil%,disciplina.ilike.%Penal%,materia.ilike.%Processo Civil%,materia.ilike.%Processo Penal%,materia.ilike.%Civil%,materia.ilike.%Penal%');
+        } else if (f.includes('MINISTÉRIO PÚBLICO') || f.includes(' MP ')) {
+          query = query.or('disciplina.ilike.%Penal%,disciplina.ilike.%Processo Penal%,disciplina.ilike.%ECA%,disciplina.ilike.%Criança%,materia.ilike.%Penal%,materia.ilike.%Processo Penal%,materia.ilike.%ECA%,materia.ilike.%Criança%');
+        } else if (f.includes('PROCURADORIA') || f.includes('PGE') || f.includes('PGM') || f.includes('AGU')) {
+          query = query.or('disciplina.ilike.%Administrativo%,disciplina.ilike.%Tributário%,disciplina.ilike.%Financeiro%,materia.ilike.%Administrativo%,materia.ilike.%Tributário%,materia.ilike.%Financeiro%');
+        } else if (f.includes('FEDERAL') || f.includes('TRF')) {
+          query = query.or('disciplina.ilike.%Previdenciário%,disciplina.ilike.%Constitucional%,disciplina.ilike.%Tributário%,materia.ilike.%Previdenciário%,materia.ilike.%Constitucional%,materia.ilike.%Tributário%');
+        } else if (f.includes('STJ') || f.includes('STF') || f.includes('TRIBUNAIS SUPERIORES')) {
+          query = query.or('disciplina.ilike.%Constitucional%,disciplina.ilike.%Jurisprudência%,disciplina.ilike.%Súmulas%,materia.ilike.%Constitucional%,materia.ilike.%Jurisprudência%,materia.ilike.%Súmulas%');
+        } else if (f.includes('DEFENSORIA') || f.includes('DPE') || f.includes('DPU')) {
+          query = query.or('disciplina.ilike.%Humanos%,disciplina.ilike.%Execução Penal%,disciplina.ilike.%Consumidor%,disciplina.ilike.%ECA%,materia.ilike.%Humanos%,materia.ilike.%Execução Penal%,materia.ilike.%Consumidor%,materia.ilike.%ECA%');
+        } else if (f.includes('DELEGADO') || f.includes('POLICIAIS')) {
+          query = query.or('disciplina.ilike.%Penal%,disciplina.ilike.%Criminologia%,disciplina.ilike.%Medicina Legal%,materia.ilike.%Penal%,materia.ilike.%Criminologia%,materia.ilike.%Medicina Legal%');
+        } else if (f.includes('ECA')) {
+          query = query.or('disciplina.ilike.%ECA%,disciplina.ilike.%Criança%,materia.ilike.%ECA%,materia.ilike.%Criança%');
+        } else if (f.includes('MEDIAÇÃO')) {
+          query = query.or('disciplina.ilike.%Mediação%,disciplina.ilike.%Arbitragem%,materia.ilike.%Mediação%,materia.ilike.%Arbitragem%');
+        } else {
+          query = query.or(`disciplina.ilike.%${termoBusca}%,materia.ilike.%${termoBusca}%`);
         }
-        const { data, error } = await query.limit(20000);
-        if (!error && data) {
-          todasQuestoes.push(...(data as Question[]));
-        }
-      } catch (e) {
-        // Ignora erros de tabelas inexistentes
       }
+
+      const { data, error } = await query.limit(20000);
+      if (!error && data) {
+        todasQuestoes.push(...(data as Question[]));
+      }
+    } catch (e) {
+      // Ignora erros de tabela
     }
   }
 
-  // Remove questões duplicadas pelo enunciado
   const questoesUnicas = Array.from(
     new Map(todasQuestoes.map(q => [q.enunciado, q])).values()
   );
