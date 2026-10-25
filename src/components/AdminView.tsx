@@ -6,8 +6,6 @@ interface UserProfile {
   email?: string
   role?: string
   plan?: string
-  papel?: string
-  plano?: string
 }
 
 interface AdminViewProps {
@@ -21,7 +19,6 @@ export const AdminView: React.FC<AdminViewProps> = ({ onBack }) => {
 
   const fetchProfiles = async () => {
     setLoading(true)
-    // Busca os perfis sem ordenar por colunas que possam não existir
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
@@ -39,19 +36,19 @@ export const AdminView: React.FC<AdminViewProps> = ({ onBack }) => {
     fetchProfiles()
   }, [])
 
-  const handleRoleChange = async (userId: string, newRole: string) => {
-    // Atualiza tanto 'role' como 'papel' por segurança contra divergências na base de dados
+  // Função para alterar o plano do usuário no banco de dados
+  const handlePlanChange = async (userId: string, newPlan: 'free' | 'intermediario' | 'premium') => {
     const { error } = await supabase
       .from('profiles')
-      .update({ role: newRole, papel: newRole })
+      .update({ plan: newPlan })
       .eq('id', userId)
 
     if (error) {
-      setMensagem(`Erro ao atualizar: ${error.message}`)
+      setMensagem(`Erro ao atualizar plano: ${error.message}`)
     } else {
-      setMensagem('Permissão atualizada com sucesso!')
+      setMensagem('Plano atualizado com sucesso!')
       setProfiles(prev =>
-        prev.map(p => (p.id === userId ? { ...p, role: newRole, papel: newRole } : p))
+        prev.map(p => (p.id === userId ? { ...p, plan: newPlan } : p))
       )
     }
 
@@ -59,11 +56,11 @@ export const AdminView: React.FC<AdminViewProps> = ({ onBack }) => {
   }
 
   return (
-    <div style={{ maxWidth: '900px', margin: '2rem auto', padding: '1.5rem', background: '#ffffff', borderRadius: '16px', border: '1px solid #c7d3c5', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+    <div style={{ maxWidth: '1000px', margin: '2rem auto', padding: '1.5rem', background: '#ffffff', borderRadius: '16px', border: '1px solid #c7d3c5', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <div>
-          <h1 style={{ fontSize: '1.8rem', color: '#0a291c', fontWeight: 'bold', fontFamily: 'serif' }}>Painel de Administração</h1>
-          <p style={{ fontSize: '0.9rem', color: '#4a5449' }}>Gerencie os níveis de acesso dos alunos cadastrados</p>
+          <h1 style={{ fontSize: '1.8rem', color: '#0a291c', fontWeight: 'bold', fontFamily: 'serif' }}>Painel de Administração de Planos</h1>
+          <p style={{ fontSize: '0.9rem', color: '#4a5449' }}>Gerencie os acessos e planos dos alunos cadastrados</p>
         </div>
         <button
           onClick={onBack}
@@ -87,9 +84,9 @@ export const AdminView: React.FC<AdminViewProps> = ({ onBack }) => {
             <thead>
               <tr style={{ borderBottom: '2px solid #e4eae3', background: '#f8f7f2', color: '#0a291c', fontSize: '0.8rem', textTransform: 'uppercase' }}>
                 <th style={{ padding: '0.75rem' }}>ID / Perfil</th>
-                <th style={{ padding: '0.75rem' }}>Papel / Role</th>
+                <th style={{ padding: '0.75rem' }}>Papel</th>
                 <th style={{ padding: '0.75rem' }}>Plano Atual</th>
-                <th style={{ padding: '0.75rem', textAlign: 'center' }}>Ações</th>
+                <th style={{ padding: '0.75rem', textAlign: 'center' }}>Ações (Alterar Plano)</th>
               </tr>
             </thead>
             <tbody>
@@ -99,7 +96,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ onBack }) => {
                     {user.email || user.id}
                   </td>
                   <td style={{ padding: '0.75rem', color: '#4a5449' }}>
-                    {user.role || user.papel || 'user'}
+                    {user.role || 'user'}
                   </td>
                   <td style={{ padding: '0.75rem' }}>
                     <span
@@ -108,26 +105,32 @@ export const AdminView: React.FC<AdminViewProps> = ({ onBack }) => {
                         borderRadius: '50px',
                         fontSize: '0.75rem',
                         fontWeight: 'bold',
-                        backgroundColor: (user.role === 'admin' || user.papel === 'admin') ? '#7c3aed' : '#0a291c',
-                        color: '#ffffff'
+                        backgroundColor: user.plan === 'premium' ? '#0a291c' : user.plan === 'intermediario' ? '#1c523a' : '#d1dcce',
+                        color: user.plan === 'free' || !user.plan ? '#0a291c' : '#ffffff'
                       }}
                     >
-                      {(user.plan || user.plano || 'free').toUpperCase()}
+                      {(user.plan || 'free').toUpperCase()}
                     </span>
                   </td>
                   <td style={{ padding: '0.75rem', textAlign: 'center' }}>
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
                       <button
-                        onClick={() => handleRoleChange(user.id, 'admin')}
-                        style={{ padding: '0.3rem 0.6rem', background: '#7c3aed', color: '#ffffff', border: 'none', borderRadius: '4px', fontSize: '0.75rem', cursor: 'pointer' }}
+                        onClick={() => handlePlanChange(user.id, 'free')}
+                        style={{ padding: '0.3rem 0.6rem', background: '#d1dcce', color: '#0a291c', border: 'none', borderRadius: '4px', fontSize: '0.7rem', cursor: 'pointer', fontWeight: 'bold' }}
                       >
-                        Tornar Admin
+                        Tornar Free
                       </button>
                       <button
-                        onClick={() => handleRoleChange(user.id, 'user')}
-                        style={{ padding: '0.3rem 0.6rem', background: '#d1dcce', color: '#0a291c', border: 'none', borderRadius: '4px', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 'bold' }}
+                        onClick={() => handlePlanChange(user.id, 'intermediario')}
+                        style={{ padding: '0.3rem 0.6rem', background: '#1c523a', color: '#ffffff', border: 'none', borderRadius: '4px', fontSize: '0.7rem', cursor: 'pointer' }}
                       >
-                        Tornar User
+                        Tornar Disciplinas
+                      </button>
+                      <button
+                        onClick={() => handlePlanChange(user.id, 'premium')}
+                        style={{ padding: '0.3rem 0.6rem', background: '#0a291c', color: '#ffffff', border: 'none', borderRadius: '4px', fontSize: '0.7rem', cursor: 'pointer' }}
+                      >
+                        Tornar Premium
                       </button>
                     </div>
                   </td>
