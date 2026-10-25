@@ -103,9 +103,11 @@ export default function App() {
         .single();
 
       if (profileData) {
-        // Se a coluna role for 'admin', define como admin. Senão, usa o valor de 'plan'
-        const planoDefinitivo = profileData.role === 'admin' ? 'admin' : (profileData.plan || 'free');
-        setUserPlan(planoDefinitivo);
+        // Se for admin, assume 'admin'. Se o plano na BD for 'premium', normaliza para 'premium' em minúsculas
+        let planoBD = profileData.role === 'admin' ? 'admin' : (profileData.plano || profileData.plan || 'free');
+        planoBD = planoBD.toLowerCase().trim();
+        
+        setUserPlan(planoBD);
       }
 
       const { data: progressData, error: progressError } = await supabase
