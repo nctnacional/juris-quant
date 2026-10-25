@@ -96,24 +96,29 @@ export default function App() {
 
   const fetchUserData = async (userId: string) => {
     try {
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('role, plan')
-        .eq('id', userId)
-        .maybeSingle();
-
-      if (profileError) {
-        console.error('Erro ao buscar perfil:', profileError.message);
-      }
-
       const userEmail = session?.user?.email;
 
-      if (userEmail === 'ncteletrica@gmail.com' || (profileData && profileData.role === 'admin')) {
+      // Se for o seu e-mail principal, garante acesso total de admin e premium direto
+      if (userEmail === 'ncteletrica@gmail.com') {
         setUserPlan('admin');
-      } else if (profileData && profileData.plan) {
-        setUserPlan(profileData.plan.toLowerCase().trim());
       } else {
-        setUserPlan('admin'); // Fallback de segurança para liberar o painel
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('role, plan')
+          .eq('id', userId)
+          .maybeSingle();
+
+        if (profileData) {
+          if (profileData.role === 'admin') {
+            setUserPlan('admin');
+          } else if (profileData.plan) {
+            setUserPlan(profileData.plan.toLowerCase().trim());
+          } else {
+            setUserPlan('free');
+          }
+        } else {
+          setUserPlan('free');
+        }
       }
 
       const { data: progressData, error: progressError } = await supabase
