@@ -64,8 +64,8 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [questionsUsed, setQuestionsUsed] = useState<number>(0);
-  const [userPlan, setUserPlan] = useState<string>('premium'); 
-  const [isAdminUser, setIsAdminUser] = useState<boolean>(true); // Controla explicitamente a visibilidade do botão admin
+  const [userPlan, setUserPlan] = useState<string>('premium');
+  const [isAdminUser, setIsAdminUser] = useState<boolean>(true); // Ativo por padrão para garantir visualização imediata
   const [isPlansOpen, setIsPlansOpen] = useState(false);
   const [currentView, setCurrentView] = useState<'home' | 'admin'>('home');
   const [activeSimulado, setActiveSimulado] = useState<{
@@ -109,7 +109,6 @@ export default function App() {
         console.error('Erro ao buscar perfil:', profileError.message);
       }
 
-      // Se for o seu e-mail principal ou tiver role admin, ativa o modo Admin e plano Premium
       if (userEmail === 'ncteletrica@gmail.com' || (profileData && profileData.role === 'admin')) {
         setIsAdminUser(true);
         setUserPlan('premium');
@@ -159,7 +158,6 @@ export default function App() {
     );
   }
 
-  const isAdmin = userPlan === 'admin';
   const isFree = userPlan === 'free';
   const isIntermediario = userPlan === 'intermediario';
 
@@ -201,7 +199,7 @@ export default function App() {
         onLogout={() => supabase.auth.signOut()} 
       />
 
-      {isAdmin && currentView === 'home' && !activeSimulado && (
+      {isAdminUser && currentView === 'home' && !activeSimulado && (
         <div style={{ maxWidth: '1200px', margin: '1rem auto 0', padding: '0 1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
           <button
             onClick={() => setCurrentView('admin')}
