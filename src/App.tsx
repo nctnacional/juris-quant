@@ -96,18 +96,17 @@ export default function App() {
 
   const fetchUserData = async (userId: string) => {
     try {
-      const { data: profileData, error: profileError } = await supabase
+      const { data: profileData } = await supabase
         .from('profiles')
-        .select('role, plan')
+        .select('role, plan, email')
         .eq('id', userId)
         .single();
 
-      if (profileError) {
-        console.error('Erro ao buscar perfil:', profileError.message);
-      }
-
-      if (profileData) {
-        // Se a role for 'admin', define como admin. Senão, assume o plano ('premium', 'free', etc.)
+      // FORÇAR ADMIN E PREMIUM PARA O SEU E-MAIL PRINCIPAL SE NECESSÁRIO
+      const currentUserEmail = session?.user?.email;
+      if (currentUserEmail === 'ncteletrica@gmail.com') {
+        setUserPlan('admin'); // Libera o painel admin e o status máximo automaticamente
+      } else if (profileData) {
         if (profileData.role === 'admin') {
           setUserPlan('admin');
         } else if (profileData.plan) {
