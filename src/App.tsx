@@ -98,7 +98,7 @@ export default function App() {
     try {
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('plano, papel, plan, role')
+        .select('role, plan')
         .eq('id', userId)
         .single();
 
@@ -107,15 +107,11 @@ export default function App() {
       }
 
       if (profileData) {
-        const papelUsuario = profileData.papel || profileData.role;
-        const planoUsuario = profileData.plano || profileData.plan;
-
-        if (papelUsuario === 'admin') {
+        // Se a role for 'admin', define como admin. Senão, assume o plano ('premium', 'free', etc.)
+        if (profileData.role === 'admin') {
           setUserPlan('admin');
-        } else if (planoUsuario === 'premium') {
-          setUserPlan('premium');
-        } else if (planoUsuario === 'intermediario') {
-          setUserPlan('intermediario');
+        } else if (profileData.plan) {
+          setUserPlan(profileData.plan.toLowerCase().trim());
         } else {
           setUserPlan('free');
         }
