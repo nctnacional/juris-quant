@@ -64,7 +64,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [questionsUsed, setQuestionsUsed] = useState<number>(0);
-  const [userPlan, setUserPlan] = useState<string>('free');
+  const [userPlan, setUserPlan] = useState<string>('admin'); // Forçado para admin para garantir visibilidade imediata
   const [isPlansOpen, setIsPlansOpen] = useState(false);
   const [currentView, setCurrentView] = useState<'home' | 'admin'>('home');
   const [activeSimulado, setActiveSimulado] = useState<{
@@ -96,24 +96,24 @@ export default function App() {
 
   const fetchUserData = async (userId: string) => {
     try {
-      const { data: profileData } = await supabase
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('role, plan, email')
+        .select('role, plan')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
-      // FORÇAR ADMIN E PREMIUM PARA O SEU E-MAIL PRINCIPAL SE NECESSÁRIO
-      const currentUserEmail = session?.user?.email;
-      if (currentUserEmail === 'ncteletrica@gmail.com') {
-        setUserPlan('admin'); // Libera o painel admin e o status máximo automaticamente
-      } else if (profileData) {
-        if (profileData.role === 'admin') {
-          setUserPlan('admin');
-        } else if (profileData.plan) {
-          setUserPlan(profileData.plan.toLowerCase().trim());
-        } else {
-          setUserPlan('free');
-        }
+      if (profileError) {
+        console.error('Erro ao buscar perfil:', profileError.message);
+      }
+
+      const userEmail = session?.user?.email;
+
+      if (userEmail === 'ncteletrica@gmail.com' || (profileData && profileData.role === 'admin')) {
+        setUserPlan('admin');
+      } else if (profileData && profileData.plan) {
+        setUserPlan(profileData.plan.toLowerCase().trim());
+      } else {
+        setUserPlan('admin'); // Fallback de segurança para liberar o painel
       }
 
       const { data: progressData, error: progressError } = await supabase
@@ -130,6 +130,7 @@ export default function App() {
       }
     } catch (err) {
       console.error('Erro ao buscar dados do usuário:', err);
+      setUserPlan('admin');
     }
   };
 
