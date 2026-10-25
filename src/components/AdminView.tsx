@@ -1,128 +1,142 @@
 import React, { useEffect, useState } from 'react'
-import { ModalPlanos } from './ModalPlanos'
 import { supabase } from '../lib/supabase'
 
-export function Header() {
-	const [isModalOpen, setIsModalOpen] = useState(false)
-
-	return (
-		<>
-			<header style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem', background: '#0d3b22', color: '#fff' }}>
-				<h2>JURIS QUANT</h2>
-				<button
-					onClick={() => setIsModalOpen(true)}
-					style={{ background: '#d4af37', border: 'none', padding: '0.4rem 1rem', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer', color: '#000' }}
-				>
-					PREMIUM
-				</button>
-			</header>
-			<ModalPlanos isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-		</>
-	)
-}
-
 interface UserProfile {
-	id: string
-	email: string
-	role: 'free' | 'premium' | 'admin'
-	created_at: string
+  id: string
+  email?: string
+  role?: string
+  plan?: string
+  papel?: string
+  plano?: string
 }
 
 interface AdminViewProps {
-	onBack: () => void
+  onBack: () => void
 }
 
 export const AdminView: React.FC<AdminViewProps> = ({ onBack }) => {
-	const [profiles, setProfiles] = useState<UserProfile[]>([])
-	const [loading, setLoading] = useState(true)
-	const [mensagem, setMensagem] = useState<string | null>(null)
+  const [profiles, setProfiles] = useState<UserProfile[]>([])
+  const [loading, setLoading] = useState<boolean>(true)
+  const [mensagem, setMensagem] = useState<string | null>(null)
 
-	useEffect(() => {
-		const fetchProfiles = async () => {
-			setLoading(true)
-			const { data, error } = await supabase
-				.from('profiles')
-				.select('*')
-				.order('created_at', { ascending: false })
+  const fetchProfiles = async () => {
+    setLoading(true)
+    // Busca os perfis sem ordenar por colunas que possam não existir
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
 
-			if (error) {
-				console.error('Erro ao buscar perfis:', error.message)
-				setMensagem(`Erro ao buscar perfis: ${error.message}`)
-			} else {
-				setProfiles((data ?? []) as UserProfile[])
-			}
-			setLoading(false)
-		}
+    if (error) {
+      console.error('Erro ao buscar perfis:', error.message)
+      setMensagem(`Erro ao buscar: ${error.message}`)
+    } else if (data) {
+      setProfiles(data as UserProfile[])
+    }
+    setLoading(false)
+  }
 
-		void fetchProfiles()
-	}, [])
+  useEffect(() => {
+    fetchProfiles()
+  }, [])
 
-	const handleRoleChange = async (userId: string, newRole: UserProfile['role']) => {
-		const { error } = await supabase
-			.from('profiles')
-			.update({ role: newRole })
-			.eq('id', userId)
+  const handleRoleChange = async (userId: string, newRole: string) => {
+    // Atualiza tanto 'role' como 'papel' por segurança contra divergências na base de dados
+    const { error } = await supabase
+      .from('profiles')
+      .update({ role: newRole, papel: newRole })
+      .eq('id', userId)
 
-		if (error) {
-			setMensagem(`Erro ao atualizar: ${error.message}`)
-		} else {
-			setMensagem('Plano atualizado com sucesso!')
-			setProfiles(current => current.map(profile =>
-				profile.id === userId ? { ...profile, role: newRole } : profile
-			))
-		}
-		window.setTimeout(() => setMensagem(null), 3000)
-	}
+    if (error) {
+      setMensagem(`Erro ao atualizar: ${error.message}`)
+    } else {
+      setMensagem('Permissão atualizada com sucesso!')
+      setProfiles(prev =>
+        prev.map(p => (p.id === userId ? { ...p, role: newRole, papel: newRole } : p))
+      )
+    }
 
-	return (
-		<div className="max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-md border border-gray-100 mt-6">
-			<div className="flex justify-between items-center mb-6">
-				<div>
-					<h1 className="text-2xl font-bold text-gray-800">Painel de Administração</h1>
-					<p className="text-sm text-gray-500">Gerencie o plano de acesso dos alunos cadastrados</p>
-				</div>
-				<button onClick={onBack} className="px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg text-sm font-medium transition">
-					← Voltar para a Tela Principal
-				</button>
-			</div>
+    setTimeout(() => setMensagem(null), 3000)
+  }
 
-			{mensagem && <div role="status" className="mb-4 p-3 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg text-sm">{mensagem}</div>}
+  return (
+    <div style={{ maxWidth: '900px', margin: '2rem auto', padding: '1.5rem', background: '#ffffff', borderRadius: '16px', border: '1px solid #c7d3c5', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+        <div>
+          <h1 style={{ fontSize: '1.8rem', color: '#0a291c', fontWeight: 'bold', fontFamily: 'serif' }}>Painel de Administração</h1>
+          <p style={{ fontSize: '0.9rem', color: '#4a5449' }}>Gerencie os níveis de acesso dos alunos cadastrados</p>
+        </div>
+        <button
+          onClick={onBack}
+          style={{ padding: '0.6rem 1.2rem', background: '#e4eae3', color: '#0a291c', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
+        >
+          ← Voltar para a Tela Principal
+        </button>
+      </div>
 
-			{loading ? (
-				<div className="text-center py-10 text-gray-500">Carregando usuários...</div>
-			) : (
-				<div className="overflow-x-auto">
-					<table className="w-full text-left border-collapse">
-						<thead>
-							<tr className="border-b border-gray-200 bg-gray-50 text-xs font-semibold text-gray-600 uppercase">
-								<th className="py-3 px-4">Email</th>
-								<th className="py-3 px-4">Data de Cadastro</th>
-								<th className="py-3 px-4">Status / Plano</th>
-								<th className="py-3 px-4 text-center">Ações</th>
-							</tr>
-						</thead>
-						<tbody className="divide-y divide-gray-100 text-sm">
-							{profiles.map(user => (
-								<tr key={user.id} className="hover:bg-gray-50 transition">
-									<td className="py-3 px-4 font-medium text-gray-800">{user.email}</td>
-									<td className="py-3 px-4 text-gray-500">{new Date(user.created_at).toLocaleDateString('pt-BR')}</td>
-									<td className="py-3 px-4">
-										<span className={`inline-block px-2.5 py-1 rounded-full text-xs font-bold ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' : user.role === 'premium' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
-											{user.role.toUpperCase()}
-										</span>
-									</td>
-									<td className="py-3 px-4 text-center">
-										<div className="flex justify-center gap-2">
-											{user.role !== 'premium' && <button onClick={() => void handleRoleChange(user.id, 'premium')} className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-semibold transition">Ativar Premium</button>}
-											{user.role !== 'free' && <button onClick={() => void handleRoleChange(user.id, 'free')} className="px-3 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded text-xs font-semibold transition">Mudar p/ Grátis</button>}
-										</div>
-									</td>
-								</tr>
-							))}
-						</tbody>
-					</table>
-				</div>
-			)}
-		</div>
-	)
+      {mensagem && (
+        <div style={{ marginBottom: '1rem', padding: '0.75rem', background: '#d1dcce', color: '#0a291c', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 'bold' }}>
+          {mensagem}
+        </div>
+      )}
+
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '3rem', color: '#4a5449' }}>Carregando usuários...</div>
+      ) : (
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+            <thead>
+              <tr style={{ borderBottom: '2px solid #e4eae3', background: '#f8f7f2', color: '#0a291c', fontSize: '0.8rem', textTransform: 'uppercase' }}>
+                <th style={{ padding: '0.75rem' }}>ID / Perfil</th>
+                <th style={{ padding: '0.75rem' }}>Papel / Role</th>
+                <th style={{ padding: '0.75rem' }}>Plano Atual</th>
+                <th style={{ padding: '0.75rem', textAlign: 'center' }}>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {profiles.map(user => (
+                <tr key={user.id} style={{ borderBottom: '1px solid #e4eae3', fontSize: '0.9rem' }}>
+                  <td style={{ padding: '0.75rem', color: '#1f2937', fontWeight: 500 }}>
+                    {user.email || user.id}
+                  </td>
+                  <td style={{ padding: '0.75rem', color: '#4a5449' }}>
+                    {user.role || user.papel || 'user'}
+                  </td>
+                  <td style={{ padding: '0.75rem' }}>
+                    <span
+                      style={{
+                        padding: '0.25rem 0.6rem',
+                        borderRadius: '50px',
+                        fontSize: '0.75rem',
+                        fontWeight: 'bold',
+                        backgroundColor: (user.role === 'admin' || user.papel === 'admin') ? '#7c3aed' : '#0a291c',
+                        color: '#ffffff'
+                      }}
+                    >
+                      {(user.plan || user.plano || 'free').toUpperCase()}
+                    </span>
+                  </td>
+                  <td style={{ padding: '0.75rem', textAlign: 'center' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem' }}>
+                      <button
+                        onClick={() => handleRoleChange(user.id, 'admin')}
+                        style={{ padding: '0.3rem 0.6rem', background: '#7c3aed', color: '#ffffff', border: 'none', borderRadius: '4px', fontSize: '0.75rem', cursor: 'pointer' }}
+                      >
+                        Tornar Admin
+                      </button>
+                      <button
+                        onClick={() => handleRoleChange(user.id, 'user')}
+                        style={{ padding: '0.3rem 0.6rem', background: '#d1dcce', color: '#0a291c', border: 'none', borderRadius: '4px', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 'bold' }}
+                      >
+                        Tornar User
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  )
 }
