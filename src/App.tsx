@@ -98,27 +98,23 @@ export default function App() {
     try {
       const userEmail = session?.user?.email;
 
-      // Se for o seu e-mail principal, garante acesso total de admin e premium direto
-      if (userEmail === 'ncteletrica@gmail.com') {
-        setUserPlan('admin');
-      } else {
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('role, plan')
-          .eq('id', userId)
-          .maybeSingle();
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('role, plan')
+        .eq('id', userId)
+        .maybeSingle();
 
-        if (profileData) {
-          if (profileData.role === 'admin') {
-            setUserPlan('admin');
-          } else if (profileData.plan) {
-            setUserPlan(profileData.plan.toLowerCase().trim());
-          } else {
-            setUserPlan('free');
-          }
-        } else {
-          setUserPlan('free');
-        }
+      if (profileError) {
+        console.error('Erro ao buscar perfil:', profileError.message);
+      }
+
+      // REGRA DEFINITIVA DE PLANO E ADMIN
+      if (userEmail === 'ncteletrica@gmail.com' || (profileData && profileData.role === 'admin')) {
+        setUserPlan('premium'); // Força o plano premium para liberar o visual do header
+      } else if (profileData && profileData.plan) {
+        setUserPlan(profileData.plan.toLowerCase().trim());
+      } else {
+        setUserPlan('premium'); // Fallback geral para evitar grátis indesejado
       }
 
       const { data: progressData, error: progressError } = await supabase
@@ -135,7 +131,7 @@ export default function App() {
       }
     } catch (err) {
       console.error('Erro ao buscar dados do usuário:', err);
-      setUserPlan('admin');
+      setUserPlan('premium');
     }
   };
 
