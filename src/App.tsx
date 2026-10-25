@@ -65,7 +65,7 @@ export default function App() {
   const [searchTerm, setSearchTerm] = useState('');
   const [questionsUsed, setQuestionsUsed] = useState<number>(0);
   const [userPlan, setUserPlan] = useState<string>('premium');
-  const [isAdminUser, setIsAdminUser] = useState<boolean>(true); // Ativo por padrão para garantir visualização imediata
+  const [isAdminUser, setIsAdminUser] = useState<boolean>(true);
   const [isPlansOpen, setIsPlansOpen] = useState(false);
   const [currentView, setCurrentView] = useState<'home' | 'admin'>('home');
   const [activeSimulado, setActiveSimulado] = useState<{
@@ -190,7 +190,7 @@ export default function App() {
   );
 
   return (
-    <div style={{ backgroundColor: '#f8f7f2', minHeight: '100vh', color: '#1f2937', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+    <div style={{ backgroundColor: '#f8f7f2', minHeight: '100vh', color: '#1f2937', fontFamily: "'Plus Jakarta Sans', sans-serif", width: '100%', overflowX: 'hidden' }}>
       
       <Header 
         userPlan={userPlan as any} 
@@ -200,7 +200,7 @@ export default function App() {
       />
 
       {isAdminUser && currentView === 'home' && !activeSimulado && (
-        <div style={{ maxWidth: '1200px', margin: '1rem auto 0', padding: '0 1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
+        <div style={{ width: '100%', maxWidth: '1400px', margin: '1rem auto 0', padding: '0 1.5rem', display: 'flex', justifyContent: 'flex-end', boxSizing: 'border-box' }}>
           <button
             onClick={() => setCurrentView('admin')}
             style={{ backgroundColor: '#0a291c', color: '#e2c07d', border: '1px solid #e2c07d', padding: '0.6rem 1.2rem', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
@@ -221,21 +221,21 @@ export default function App() {
           onBack={() => setActiveSimulado(null)} 
         />
       ) : (
-        <div style={{ maxWidth: '1200px', margin: '2rem auto', padding: '0 1.5rem' }}>
+        <div style={{ width: '100%', maxWidth: '1400px', margin: '2rem auto', padding: '0 1.5rem', boxSizing: 'border-box' }}>
           
-          <header style={{ backgroundColor: '#0a291c', borderRadius: '16px', padding: '3rem 2rem', color: '#ffffff', marginBottom: '2rem', boxShadow: '0 10px 30px rgba(10, 41, 28, 0.15)', border: '1px solid rgba(226, 192, 125, 0.2)' }}>
+          <header style={{ backgroundColor: '#0a291c', borderRadius: '16px', padding: 'clamp(2rem, 4vw, 3.5rem) clamp(1.5rem, 3vw, 2.5rem)', color: '#ffffff', marginBottom: '2rem', boxShadow: '0 10px 30px rgba(10, 41, 28, 0.15)', border: '1px solid rgba(226, 192, 125, 0.2)', boxSizing: 'border-box' }}>
             <span style={{ display: 'inline-block', border: '1px solid #e2c07d', borderRadius: '50px', padding: '0.35rem 1.2rem', fontSize: '0.75rem', fontWeight: 600, color: '#e2c07d', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '1.2rem' }}>
               OAB • CONCURSOS • TRIBUNAIS • PÓS-GRADUAÇÃO
             </span>
-            <h1 style={{ fontSize: '2.4rem', fontWeight: 500, marginBottom: '1rem', lineHeight: '1.2', fontFamily: 'serif' }}>
+            <h1 style={{ fontSize: 'clamp(1.8rem, 3vw, 2.5rem)', fontWeight: 500, marginBottom: '1rem', lineHeight: '1.2', fontFamily: 'serif' }}>
               O estudo do Direito, <em style={{ color: '#e2c07d', fontStyle: 'italic' }}>refinado.</em>
             </h1>
-            <p style={{ color: '#e2d9c8', fontSize: '1rem', maxWidth: '650px', marginBottom: '2rem', lineHeight: '1.6', opacity: 0.9 }}>
+            <p style={{ color: '#e2d9c8', fontSize: 'clamp(0.9rem, 1.2vw, 1.05rem)', maxWidth: '650px', marginBottom: '2rem', lineHeight: '1.6', opacity: 0.9 }}>
               Banco de questões comentadas, resumos estratégicos por ramo e preparação quantitativa completa para alcançar a excelência jurídica.
             </p>
           </header>
 
-          <div style={{ backgroundColor: '#ffffff', border: '1px solid #0a291c', borderRadius: '50px', padding: '0.85rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '2.5rem', boxShadow: '0 4px 12px rgba(10, 41, 28, 0.05)' }}>
+          <div style={{ backgroundColor: '#ffffff', border: '1px solid #0a291c', borderRadius: '50px', padding: '0.85rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '2.5rem', boxShadow: '0 4px 12px rgba(10, 41, 28, 0.05)', boxSizing: 'border-box' }}>
             <span>🔍</span>
             <input 
               type="text" 
@@ -250,7 +250,8 @@ export default function App() {
             Foco de Preparação Especial
           </h2>
           
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.2rem', marginBottom: '3rem' }}>
+          {/* Grelha responsiva: adapta-se automaticamente de 1 a 3 colunas consoante o tamanho/zoom do ecrã */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.2rem', marginBottom: '3rem' }}>
             {specialFocusData.map((item) => (
               <div 
                 key={item.id} 
@@ -265,7 +266,8 @@ export default function App() {
                   flexDirection: 'column', 
                   justifyContent: 'space-between',
                   cursor: 'pointer',
-                  transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease'
+                  transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease',
+                  boxSizing: 'border-box'
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-4px)';
@@ -299,7 +301,7 @@ export default function App() {
           <h2 style={{ fontSize: '1.5rem', color: '#0a291c', marginBottom: '1.2rem', fontWeight: 700, fontFamily: 'serif' }}>
             Todas as Disciplinas ({filteredDisciplines.length})
           </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.2rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.2rem' }}>
             {filteredDisciplines.map((item) => (
               <div 
                 key={item.id} 
@@ -314,7 +316,8 @@ export default function App() {
                   flexDirection: 'column', 
                   justifyContent: 'space-between',
                   cursor: 'pointer',
-                  transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease'
+                  transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease',
+                  boxSizing: 'border-box'
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-3px)';
