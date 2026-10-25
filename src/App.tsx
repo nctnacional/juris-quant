@@ -4,7 +4,7 @@ import Auth from './components/Auth';
 import SimuladoView from './components/SimuladoView';
 import Header from './components/Header';
 import { ModalPlanos } from './components/ModalPlanos';
-import { AdminView } from './components/AdminView'; // <-- 1. Importação da Tela Admin
+import { AdminView } from './components/AdminView';
 
 interface Discipline {
   id: string;
@@ -66,7 +66,7 @@ export default function App() {
   const [questionsUsed, setQuestionsUsed] = useState<number>(0);
   const [userPlan, setUserPlan] = useState<string>('free');
   const [isPlansOpen, setIsPlansOpen] = useState(false);
-  const [currentView, setCurrentView] = useState<'home' | 'admin'>('home'); // <-- 2. Controle de visualização (home ou admin)
+  const [currentView, setCurrentView] = useState<'home' | 'admin'>('home');
   const [activeSimulado, setActiveSimulado] = useState<{
     type: 'discipline' | 'focus';
     id: string;
@@ -98,12 +98,14 @@ export default function App() {
     try {
       const { data: profileData } = await supabase
         .from('profiles')
-        .select('role') // <-- Ajustado para buscar 'role' caso use a coluna de perfil administrativa
+        .select('plan, role') // Leitura das duas colunas da tabela profiles
         .eq('id', userId)
         .single();
 
-      if (profileData && profileData.role) {
-        setUserPlan(profileData.role); // Armazena a role (free, premium, admin)
+      if (profileData) {
+        // Se a coluna role for 'admin', define como admin. Senão, usa o valor de 'plan'
+        const planoDefinitivo = profileData.role === 'admin' ? 'admin' : (profileData.plan || 'free');
+        setUserPlan(planoDefinitivo);
       }
 
       const { data: progressData, error: progressError } = await supabase
@@ -183,7 +185,6 @@ export default function App() {
         onLogout={() => supabase.auth.signOut()} 
       />
 
-      {/* 3. Atalho visível apenas para administradores */}
       {isAdmin && currentView === 'home' && !activeSimulado && (
         <div style={{ maxWidth: '1200px', margin: '1rem auto 0', padding: '0 1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
           <button
@@ -195,14 +196,13 @@ export default function App() {
         </div>
       )}
 
-      {/* 4. Renderização condicional das telas */}
       {currentView === 'admin' ? (
         <AdminView onBack={() => setCurrentView('home')} />
       ) : activeSimulado ? (
         <SimuladoView 
           type={activeSimulado.type}
           itemId={activeSimulado.id} 
-          itemTitle={activeSimualadoTituloSeguro(activeSimulado.title)} 
+          itemTitle={activeSimulado.title} 
           maxQuestions={activeSimulado.isFreeLimit ? 150 : undefined} 
           onBack={() => setActiveSimulado(null)} 
         />
@@ -337,9 +337,4 @@ export default function App() {
 
     </div>
   );
-}
-
-// Pequena função auxiliar interna para compatibilidade de título
-function activeSimualadoTituloSeguro(title: string) {
-  return title;
 }
