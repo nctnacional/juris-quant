@@ -201,7 +201,7 @@ export default function App() {
         onLogout={() => supabase.auth.signOut()} 
       />
 
-      {isAdminUser && currentView === 'home' && !activeSimulado && (
+      {isAdmin && currentView === 'home' && !activeSimulado && (
         <div style={{ maxWidth: '1200px', margin: '1rem auto 0', padding: '0 1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
           <button
             onClick={() => setCurrentView('admin')}
