@@ -96,18 +96,29 @@ export default function App() {
 
   const fetchUserData = async (userId: string) => {
     try {
-      const { data: profileData } = await supabase
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('plan, role') // Leitura das duas colunas da tabela profiles
+        .select('plano, papel, plan, role')
         .eq('id', userId)
         .single();
 
+      if (profileError) {
+        console.error('Erro ao buscar perfil:', profileError.message);
+      }
+
       if (profileData) {
-        // Se for admin, assume 'admin'. Se o plano na BD for 'premium', normaliza para 'premium' em minúsculas
-        let planoBD = profileData.role === 'admin' ? 'admin' : (profileData.plano || profileData.plan || 'free');
-        planoBD = planoBD.toLowerCase().trim();
-        
-        setUserPlan(planoBD);
+        const papelUsuario = profileData.papel || profileData.role;
+        const planoUsuario = profileData.plano || profileData.plan;
+
+        if (papelUsuario === 'admin') {
+          setUserPlan('admin');
+        } else if (planoUsuario === 'premium') {
+          setUserPlan('premium');
+        } else if (planoUsuario === 'intermediario') {
+          setUserPlan('intermediario');
+        } else {
+          setUserPlan('free');
+        }
       }
 
       const { data: progressData, error: progressError } = await supabase
@@ -130,7 +141,7 @@ export default function App() {
   if (loading) {
     return (
       <div style={{ textAlign: 'center', padding: '4rem', color: '#0a291c', fontFamily: 'sans-serif' }}>
-        <h2>Carregando...</h2>
+        <h2>A carregar...</h2>
       </div>
     );
   }
@@ -151,7 +162,7 @@ export default function App() {
 
   const handleFocusClick = (item: FocusTarget) => {
     if (isIntermediario && item.id !== 'oab' && item.id !== 'tre') {
-      alert('Seu plano atual ("Plano Disciplinas") dá acesso às disciplinas, OAB e TRE. Faça o upgrade para o Plano Completo para desbloquear as demais preparações especiais!');
+      alert('O seu plano atual ("Plano Disciplinas") dá acesso às disciplinas, OAB e TRE. Faça o upgrade para o Plano Completo para desbloquear as demais preparações especiais!');
       return;
     }
 
