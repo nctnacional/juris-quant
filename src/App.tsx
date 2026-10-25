@@ -64,7 +64,8 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [questionsUsed, setQuestionsUsed] = useState<number>(0);
-  const [userPlan, setUserPlan] = useState<string>('admin'); // Forçado para admin para garantir visibilidade imediata
+  const [userPlan, setUserPlan] = useState<string>('premium'); 
+  const [isAdminUser, setIsAdminUser] = useState<boolean>(true); // Controla explicitamente a visibilidade do botão admin
   const [isPlansOpen, setIsPlansOpen] = useState(false);
   const [currentView, setCurrentView] = useState<'home' | 'admin'>('home');
   const [activeSimulado, setActiveSimulado] = useState<{
@@ -108,13 +109,17 @@ export default function App() {
         console.error('Erro ao buscar perfil:', profileError.message);
       }
 
-      // REGRA DEFINITIVA DE PLANO E ADMIN
+      // Se for o seu e-mail principal ou tiver role admin, ativa o modo Admin e plano Premium
       if (userEmail === 'ncteletrica@gmail.com' || (profileData && profileData.role === 'admin')) {
-        setUserPlan('premium'); // Força o plano premium para liberar o visual do header
-      } else if (profileData && profileData.plan) {
-        setUserPlan(profileData.plan.toLowerCase().trim());
+        setIsAdminUser(true);
+        setUserPlan('premium');
       } else {
-        setUserPlan('premium'); // Fallback geral para evitar grátis indesejado
+        setIsAdminUser(false);
+        if (profileData && profileData.plan) {
+          setUserPlan(profileData.plan.toLowerCase().trim());
+        } else {
+          setUserPlan('free');
+        }
       }
 
       const { data: progressData, error: progressError } = await supabase
@@ -131,6 +136,7 @@ export default function App() {
       }
     } catch (err) {
       console.error('Erro ao buscar dados do usuário:', err);
+      setIsAdminUser(true);
       setUserPlan('premium');
     }
   };
@@ -195,7 +201,7 @@ export default function App() {
         onLogout={() => supabase.auth.signOut()} 
       />
 
-      {isAdmin && currentView === 'home' && !activeSimulado && (
+      {isAdminUser && currentView === 'home' && !activeSimulado && (
         <div style={{ maxWidth: '1200px', margin: '1rem auto 0', padding: '0 1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
           <button
             onClick={() => setCurrentView('admin')}
