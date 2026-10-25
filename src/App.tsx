@@ -3,7 +3,8 @@ import { supabase } from './lib/supabase';
 import Auth from './components/Auth';
 import SimuladoView from './components/SimuladoView';
 import Header from './components/Header';
-import { ModalPlanos } from './components/ModalPlanos'; // <-- 1. Importação do Modal de Planos
+import { ModalPlanos } from './components/ModalPlanos';
+import { AdminView } from './components/AdminView'; // <-- 1. Importação da Tela Admin
 
 interface Discipline {
   id: string;
@@ -64,7 +65,8 @@ export default function App() {
   const [searchTerm, setSearchTerm] = useState('');
   const [questionsUsed, setQuestionsUsed] = useState<number>(0);
   const [userPlan, setUserPlan] = useState<string>('free');
-  const [isPlansOpen, setIsPlansOpen] = useState(false); // <-- 2. Estado para controlar a abertura do modal
+  const [isPlansOpen, setIsPlansOpen] = useState(false);
+  const [currentView, setCurrentView] = useState<'home' | 'admin'>('home'); // <-- 2. Controle de visualização (home ou admin)
   const [activeSimulado, setActiveSimulado] = useState<{
     type: 'discipline' | 'focus';
     id: string;
@@ -96,12 +98,12 @@ export default function App() {
     try {
       const { data: profileData } = await supabase
         .from('profiles')
-        .select('plan')
+        .select('role') // <-- Ajustado para buscar 'role' caso use a coluna de perfil administrativa
         .eq('id', userId)
         .single();
 
-      if (profileData && profileData.plan) {
-        setUserPlan(profileData.plan);
+      if (profileData && profileData.role) {
+        setUserPlan(profileData.role); // Armazena a role (free, premium, admin)
       }
 
       const { data: progressData, error: progressError } = await supabase
@@ -139,6 +141,7 @@ export default function App() {
     );
   }
 
+  const isAdmin = userPlan === 'admin';
   const isFree = userPlan === 'free';
   const isIntermediario = userPlan === 'intermediario';
 
@@ -176,15 +179,30 @@ export default function App() {
       <Header 
         userPlan={userPlan as any} 
         questionsUsed={questionsUsed} 
-        onOpenPlans={() => setIsPlansOpen(true)} /* <-- 3. Aciona a abertura do modal ao clicar */
+        onOpenPlans={() => setIsPlansOpen(true)} 
         onLogout={() => supabase.auth.signOut()} 
       />
 
-      {activeSimulado ? (
+      {/* 3. Atalho visível apenas para administradores */}
+      {isAdmin && currentView === 'home' && !activeSimulado && (
+        <div style={{ maxWidth: '1200px', margin: '1rem auto 0', padding: '0 1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
+          <button
+            onClick={() => setCurrentView('admin')}
+            style={{ backgroundColor: '#0a291c', color: '#e2c07d', border: '1px solid #e2c07d', padding: '0.6rem 1.2rem', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+          >
+            ⚙️ Abrir Painel de Administração
+          </button>
+        </div>
+      )}
+
+      {/* 4. Renderização condicional das telas */}
+      {currentView === 'admin' ? (
+        <AdminView onBack={() => setCurrentView('home')} />
+      ) : activeSimulado ? (
         <SimuladoView 
           type={activeSimulado.type}
           itemId={activeSimulado.id} 
-          itemTitle={activeSimulado.title} 
+          itemTitle={activeSimualadoTituloSeguro(activeSimulado.title)} 
           maxQuestions={activeSimulado.isFreeLimit ? 150 : undefined} 
           onBack={() => setActiveSimulado(null)} 
         />
@@ -312,7 +330,6 @@ export default function App() {
         </div>
       )}
 
-      {/* 4. Renderização condicional do Modal de Planos */}
       <ModalPlanos 
         isOpen={isPlansOpen} 
         onClose={() => setIsPlansOpen(false)} 
@@ -320,4 +337,9 @@ export default function App() {
 
     </div>
   );
+}
+
+// Pequena função auxiliar interna para compatibilidade de título
+function activeSimualadoTituloSeguro(title: string) {
+  return title;
 }

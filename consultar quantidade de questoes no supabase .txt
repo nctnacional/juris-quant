@@ -2,6 +2,8 @@ consultar quantidade:
 
 SELECT COUNT(*) AS total_questoes FROM questões;
 
+SELECT COUNT(*) AS total_questoes FROM questoes;
+
 
 consultar se tem questões repetidas :
 
