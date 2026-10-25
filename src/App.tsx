@@ -190,7 +190,7 @@ export default function App() {
   );
 
   return (
-    <div style={{ backgroundColor: '#f8f7f2', minHeight: '100vh', color: '#1f2937', fontFamily: "'Plus Jakarta Sans', sans-serif", width: '100%', overflowX: 'hidden' }}>
+    <div style={{ backgroundColor: '#f8f7f2', minHeight: '100vh', color: '#1f2937', fontFamily: "'Plus Jakarta Sans', sans-serif", width: '100%', overflowX: 'hidden', boxSizing: 'border-box' }}>
       
       <Header 
         userPlan={userPlan as any} 
@@ -250,8 +250,7 @@ export default function App() {
             Foco de Preparação Especial
           </h2>
           
-          {/* Grelha responsiva: adapta-se automaticamente de 1 a 3 colunas consoante o tamanho/zoom do ecrã */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.2rem', marginBottom: '3rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1.2rem', marginBottom: '3rem', width: '100%', boxSizing: 'border-box' }}>
             {specialFocusData.map((item) => (
               <div 
                 key={item.id} 
@@ -267,7 +266,8 @@ export default function App() {
                   justifyContent: 'space-between',
                   cursor: 'pointer',
                   transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease',
-                  boxSizing: 'border-box'
+                  boxSizing: 'border-box',
+                  height: '100%'
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-4px)';
@@ -301,7 +301,7 @@ export default function App() {
           <h2 style={{ fontSize: '1.5rem', color: '#0a291c', marginBottom: '1.2rem', fontWeight: 700, fontFamily: 'serif' }}>
             Todas as Disciplinas ({filteredDisciplines.length})
           </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.2rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1.2rem', width: '100%', boxSizing: 'border-box' }}>
             {filteredDisciplines.map((item) => (
               <div 
                 key={item.id} 
@@ -317,7 +317,8 @@ export default function App() {
                   justifyContent: 'space-between',
                   cursor: 'pointer',
                   transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease',
-                  boxSizing: 'border-box'
+                  boxSizing: 'border-box',
+                  height: '100%'
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-3px)';
