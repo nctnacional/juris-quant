@@ -85,10 +85,11 @@ export const CustomSimuladoModal: React.FC<CustomSimuladoModalProps> = ({
       const answeredIds = historyData ? historyData.map(h => h.question_id) : [];
 
       // 2. Buscar questões no banco (tabela 'questoes' ou 'questões') filtrando pelas disciplinas escolhidas
-      let query = supabase
-        .from('questoes') // ou 'questões', ajuste conforme a sua tabela principal de perguntas
-        .select('*')
-        .in('discipline_id', selectedDisciplines);
+     // Exemplo de como deve ficar a query dentro do CustomSimuladoModal.tsx:
+let query = supabase
+  .from('"questões"') // Note as aspas duplas e os acentos corretos
+  .select('*')
+  .in('discipline_id', selectedDisciplines);
 
       // Se houver questões respondidas, exclui do lote para não repetir
       if (answeredIds.length > 0) {
