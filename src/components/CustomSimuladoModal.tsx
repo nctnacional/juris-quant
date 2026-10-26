@@ -74,6 +74,11 @@ export const CustomSimuladoModal: React.FC<CustomSimuladoModalProps> = ({
     setErrorMsg(null);
 
     try {
+      // Mapeia os IDs selecionados (ex: 'ied') para os títulos reais guardados na base de dados (ex: 'Introdução ao Estudo do Direito')
+      const selectedTitles = allDisciplines
+        .filter(d => selectedDisciplines.includes(d.id))
+        .map(d => d.title);
+
       const { data: historyData, error: historyError } = await supabase
         .from('user_question_history')
         .select('question_id')
@@ -83,31 +88,46 @@ export const CustomSimuladoModal: React.FC<CustomSimuladoModalProps> = ({
         console.error('Erro ao buscar histórico:', historyError);
       }
 
-      // Garanta que a busca de questões respondidas converte os IDs corretamente:
-const answeredQuestionIds = historyData.map(h => h.question_id);
+      const answeredIds = (historyData || []).map(h => h.question_id);
 
-let query = supabase
-  .from('questoes')
-  .select('*')
-  .in('disciplina', selectedDisciplines);
+      // Consulta filtrando pela coluna 'disciplina' usando os títulos por extenso
+      let query = supabase
+        .from('questoes')
+        .select('*')
+        .in('disciplina', selectedTitles);
 
-// Aplica o filtro de inéditas apenas se houver histórico prévio
-if (answeredQuestionIds.length > 0) {
-  query = query.not('id', 'in', `(${answeredQuestionIds.join(',')})`);
-}
-      const { data: questionsData, error: qError } = await query.limit(100);
+      // Aplica o filtro de inéditas apenas se houver histórico prévio
+      if (answeredIds.length > 0) {
+        query = query.not('id', 'in', `(${answeredIds.join(',')})`);
+      }
+
+      const { data: questionsData, error: qError } = await query.limit(300);
 
       if (qError) {
         throw new Error(qError.message);
       }
 
-      if (!questionsData || questionsData.length === 0) {
-        setErrorMsg('Não há questoes inéditas disponíveis nestas disciplinas para o seu histórico. Tente outras disciplinas ou limpe o histórico.');
+      // Fallback: Se todas as questões dessas disciplinas já foram respondidas, busca de todo o acervo delas
+      let poolFinal = questionsData || [];
+      if (poolFinal.length === 0) {
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from('questoes')
+          .select('*')
+          .in('disciplina', selectedTitles)
+          .limit(300);
+
+        if (!fallbackError && fallbackData) {
+          poolFinal = fallbackData;
+        }
+      }
+
+      if (poolFinal.length === 0) {
+        setErrorMsg('Não há questões disponíveis nestas disciplinas.');
         setLoading(false);
         return;
       }
 
-      const shuffled = [...questionsData].sort(() => 0.5 - Math.random()).slice(0, 100);
+      const shuffled = [...poolFinal].sort(() => 0.5 - Math.random()).slice(0, 100);
 
       const newHistoryEntries = shuffled.map(q => ({
         user_id: userId,
@@ -189,12 +209,14 @@ if (answeredQuestionIds.length > 0) {
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
           <button
+            type="button"
             onClick={onClose}
             style={{ padding: '0.75rem 1.5rem', background: '#e4eae3', color: '#0a291c', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
           >
             Cancelar
           </button>
           <button
+            type="button"
             onClick={handleGenerateSimulado}
             disabled={loading || selectedDisciplines.length === 0}
             style={{
