@@ -226,9 +226,10 @@ export default function App() {
         <AdminView onBack={() => setCurrentView('home')} />
       ) : activeSimulado ? (
         <SimuladoView 
-          type={activeSimulado.type as 'discipline' | 'focus'}
+          type={activeSimulado.type}
           itemId={activeSimulado.id} 
           itemTitle={activeSimulado.title} 
+          questions={activeSimulado.questions}
           maxQuestions={activeSimulado.isFreeLimit ? 150 : undefined} 
           onBack={() => setActiveSimulado(null)} 
         />
@@ -341,7 +342,7 @@ export default function App() {
             ))}
           </div>
 
-          <h2 style={{ fontSize: '1.5rem', color: '#0a291c', marginBottom: '1.2rem', fontWeight 700, fontFamily: 'serif' }}>
+          <h2 style={{ fontSize: '1.5rem', color: '#0a291c', marginBottom: '1.2rem', fontWeight: 700, fontFamily: 'serif' }}>
             Todas as Disciplinas ({filteredDisciplines.length})
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1.2rem', width: '100%', boxSizing: 'border-box' }}>
