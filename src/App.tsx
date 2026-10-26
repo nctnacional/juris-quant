@@ -161,9 +161,6 @@ export default function App() {
     );
   }
 
-  const isFree = userPlan === 'free';
-  const isIntermediario = userPlan === 'intermediario';
-
   const handleFocusClick = (item: FocusTarget) => {
     if (isIntermediario && item.id !== 'oab' && item.id !== 'tre') {
       alert('O seu plano atual ("Plano Disciplinas") dá acesso às disciplinas, OAB e TRE. Faça o upgrade para o Plano Completo para desbloquear as demais preparações especiais!');
@@ -229,7 +226,7 @@ export default function App() {
           type={activeSimulado.type}
           itemId={activeSimulado.id} 
           itemTitle={activeSimulado.title} 
-          questions={activeSimulado.questions}
+          initialQuestions={activeSimulado.questions}
           maxQuestions={activeSimulado.isFreeLimit ? 150 : undefined} 
           onBack={() => setActiveSimulado(null)} 
         />
@@ -247,7 +244,6 @@ export default function App() {
               Banco de questões comentadas, resumos estratégicos por ramo e preparação quantitativa completa para alcançar a excelência jurídica.
             </p>
 
-            {/* BOTÃO DO SIMULADO PERSONALIZADO PREMIUM */}
             <button
               onClick={() => {
                 if (isFree) {

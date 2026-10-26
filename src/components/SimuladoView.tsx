@@ -3,16 +3,17 @@ import { fetchQuestions as fetchQuestionsFromService, Question } from '../servic
 import { supabase } from '../lib/supabase';
 
 interface SimuladoProps {
-  type: 'discipline' | 'focus';
+  type: 'discipline' | 'focus' | 'custom';
   itemId: string;
   itemTitle: string;
   maxQuestions?: number;
+  initialQuestions?: Question[]; // <--- Novo parâmetro opcional para receber as questões já sorteadas do modal
   onBack: () => void;
 }
 
-export default function SimuladoView({ type, itemId, itemTitle, maxQuestions, onBack }: SimuladoProps) {
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function SimuladoView({ type, itemId, itemTitle, maxQuestions, initialQuestions, onBack }: SimuladoProps) {
+  const [questions, setQuestions] = useState<Question[]>(initialQuestions || []);
+  const [loading, setLoading] = useState(!initialQuestions || initialQuestions.length === 0);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [showAnswer, setShowAnswer] = useState(false);
@@ -21,8 +22,13 @@ export default function SimuladoView({ type, itemId, itemTitle, maxQuestions, on
   const [isFinished, setIsFinished] = useState(false);
 
   useEffect(() => {
-    loadQuestions();
-  }, [type, itemId, itemTitle, maxQuestions]);
+    if (!initialQuestions || initialQuestions.length === 0) {
+      loadQuestions();
+    } else {
+      setQuestions(initialQuestions);
+      setLoading(false);
+    }
+  }, [type, itemId, itemTitle, maxQuestions, initialQuestions]);
 
   const loadQuestions = async () => {
     setLoading(true);
@@ -174,7 +180,7 @@ export default function SimuladoView({ type, itemId, itemTitle, maxQuestions, on
 
       <div style={{ backgroundColor: '#0a291c', color: '#ffffff', borderRadius: '12px', padding: '1.5rem', marginBottom: '1.5rem', border: '1px solid rgba(226, 192, 125, 0.3)' }}>
         <span style={{ color: '#e2c07d', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase' }}>
-          {type === 'discipline' ? 'Simulado por Disciplina' : 'Simulado por Concurso / Carreiras'}
+          {type === 'discipline' ? 'Simulado por Disciplina' : type === 'custom' ? 'Simulado Personalizado' : 'Simulado por Concurso / Carreiras'}
         </span>
         <h2 style={{ fontFamily: 'serif', marginTop: '0.3rem' }}>{itemTitle}</h2>
         {questions.length > 0 && (
