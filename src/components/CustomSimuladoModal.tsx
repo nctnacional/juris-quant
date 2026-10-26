@@ -74,7 +74,6 @@ export const CustomSimuladoModal: React.FC<CustomSimuladoModalProps> = ({
     setErrorMsg(null);
 
     try {
-      // Mapeia os IDs selecionados (ex: 'ied') para os títulos reais guardados na base de dados (ex: 'Introdução ao Estudo do Direito')
       const selectedTitles = allDisciplines
         .filter(d => selectedDisciplines.includes(d.id))
         .map(d => d.title);
@@ -90,13 +89,11 @@ export const CustomSimuladoModal: React.FC<CustomSimuladoModalProps> = ({
 
       const answeredIds = (historyData || []).map(h => h.question_id);
 
-      // Consulta filtrando pela coluna 'disciplina' usando os títulos por extenso
       let query = supabase
         .from('questoes')
         .select('*')
         .in('disciplina', selectedTitles);
 
-      // Aplica o filtro de inéditas apenas se houver histórico prévio
       if (answeredIds.length > 0) {
         query = query.not('id', 'in', `(${answeredIds.join(',')})`);
       }
@@ -107,8 +104,9 @@ export const CustomSimuladoModal: React.FC<CustomSimuladoModalProps> = ({
         throw new Error(qError.message);
       }
 
-      // Fallback: Se todas as questões dessas disciplinas já foram respondidas, busca de todo o acervo delas
       let poolFinal = questionsData || [];
+
+      // Fallback seguro caso venha vazio
       if (poolFinal.length === 0) {
         const { data: fallbackData, error: fallbackError } = await supabase
           .from('questoes')
@@ -121,13 +119,16 @@ export const CustomSimuladoModal: React.FC<CustomSimuladoModalProps> = ({
         }
       }
 
-      if (poolFinal.length === 0) {
+      // Blindagem rigorosa para garantir que é sempre um array
+      const finalPoolArray = Array.isArray(poolFinal) ? poolFinal : [];
+
+      if (finalPoolArray.length === 0) {
         setErrorMsg('Não há questões disponíveis nestas disciplinas.');
         setLoading(false);
         return;
       }
 
-      const shuffled = [...poolFinal].sort(() => 0.5 - Math.random()).slice(0, 100);
+      const shuffled = [...finalPoolArray].sort(() => 0.5 - Math.random()).slice(0, 100);
 
       const newHistoryEntries = shuffled.map(q => ({
         user_id: userId,
