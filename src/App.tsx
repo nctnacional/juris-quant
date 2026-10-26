@@ -161,6 +161,9 @@ export default function App() {
     );
   }
 
+  const isFree = userPlan === 'free';
+  const isIntermediario = userPlan === 'intermediario';
+
   const handleFocusClick = (item: FocusTarget) => {
     if (isIntermediario && item.id !== 'oab' && item.id !== 'tre') {
       alert('O seu plano atual ("Plano Disciplinas") dá acesso às disciplinas, OAB e TRE. Faça o upgrade para o Plano Completo para desbloquear as demais preparações especiais!');
