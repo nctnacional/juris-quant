@@ -226,7 +226,7 @@ export default function App() {
         <AdminView onBack={() => setCurrentView('home')} />
       ) : activeSimulado ? (
         <SimuladoView 
-          type={activeSimulado.type}
+          type={activeSimulado.type as 'discipline' | 'focus'}
           itemId={activeSimulado.id} 
           itemTitle={activeSimulado.title} 
           maxQuestions={activeSimulado.isFreeLimit ? 150 : undefined} 
@@ -236,47 +236,45 @@ export default function App() {
         <div style={{ width: '100%', maxWidth: '1400px', margin: '2rem auto', padding: '0 1.5rem', boxSizing: 'border-box' }}>
           
           <header style={{ backgroundColor: '#0a291c', borderRadius: '16px', padding: 'clamp(2rem, 4vw, 3.5rem) clamp(1.5rem, 3vw, 2.5rem)', color: '#ffffff', marginBottom: '2rem', boxShadow: '0 10px 30px rgba(10, 41, 28, 0.15)', border: '1px solid rgba(226, 192, 125, 0.2)', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-            <span style={{ display: 'inline-block', border: '1px solid #e2c07d', borderRadius: '50px', padding: '0.35rem 1.2rem', fontSize: '0.75rem', fontWeight: 600, color: '#e2c07d', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '1.2rem' }}>
-              OAB • CONCURSOS • TRIBUNAIS • PÓS-GRADUAÇÃO
-            </span>
-            <h1 style={{ fontSize: 'clamp(1.8rem, 3vw, 2.5rem)', fontWeight: 500, marginBottom: '1rem', lineHeight: '1.2', fontFamily: 'serif' }}>
-              O estudo do Direito, <em style={{ color: '#e2c07d', fontStyle: 'italic' }}>refinado.</em>
-            </h1>
-            <p style={{ color: '#e2d9c8', fontSize: 'clamp(0.9rem, 1.2vw, 1.05rem)', maxWidth: '650px', marginBottom: '2rem', lineHeight: '1.6', opacity: 0.9 }}>
-              Banco de questões comentadas, resumos estratégicos por ramo e preparação quantitativa completa para alcançar a excelência jurídica.
-            </p>
+  <span style={{ display: 'inline-block', border: '1px solid #e2c07d', borderRadius: '50px', padding: '0.35rem 1.2rem', fontSize: '0.75rem', fontWeight: 600, color: '#e2c07d', letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '1.2rem' }}>
+    OAB • CONCURSOS • TRIBUNAIS • PÓS-GRADUAÇÃO
+  </span>
+  <h1 style={{ fontSize: 'clamp(1.8rem, 3vw, 2.5rem)', fontWeight: 500, marginBottom: '1rem', lineHeight: '1.2', fontFamily: 'serif' }}>
+    O estudo do Direito, <em style={{ color: '#e2c07d', fontStyle: 'italic' }}>refinado.</em>
+  </h1>
+  <p style={{ color: '#e2d9c8', fontSize: 'clamp(0.9rem, 1.2vw, 1.05rem)', maxWidth: '650px', marginBottom: '2rem', lineHeight: '1.6', opacity: 0.9 }}>
+    Banco de questões comentadas, resumos estratégicos por ramo e preparação quantitativa completa para alcançar a excelência jurídica.
+  </p>
 
-            {/* BOTÃO EM DESTAQUE PARA CRIAR SIMULADO PERSONALIZADO PREMIUM */}
-            <button
-              onClick={() => {
-                if (isFree) {
-                  alert('O Criador de Simulados Personalizados é exclusivo para assinantes Premium!');
-                  setIsPlansOpen(true);
-                } else {
-                  setIsCustomModalOpen(true);
-                }
-              }}
-              style={{
-                backgroundColor: '#e2c07d',
-                color: '#0a291c',
-                border: 'none',
-                padding: '0.85rem 1.8rem',
-                borderRadius: '50px',
-                fontSize: '0.95rem',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                boxShadow: '0 4px 15px rgba(226, 192, 125, 0.3)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.6rem',
-                transition: 'transform 0.2s ease'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.03)'}
-              onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-            >
-              ✨ Criar Simulado Personalizado (Até 3 Disciplinas)
-            </button>
-          </header>
+  {/* BOTÃO DO SIMULADO PERSONALIZADO */}
+  <button
+    onClick={() => {
+      if (isFree) {
+        alert('O Criador de Simulados Personalizados é exclusivo para assinantes Premium!');
+        setIsPlansOpen(true);
+      } else {
+        setIsCustomModalOpen(true);
+      }
+    }}
+    style={{
+      backgroundColor: '#e2c07d',
+      color: '#0a291c',
+      border: 'none',
+      padding: '0.85rem 1.8rem',
+      borderRadius: '50px',
+      fontSize: '0.95rem',
+      fontWeight: 'bold',
+      cursor: 'pointer',
+      boxShadow: '0 4px 15px rgba(226, 192, 125, 0.3)',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.6rem',
+      transition: 'transform 0.2s ease'
+    }}
+  >
+    ✨ Criar Simulado Personalizado (Até 3 Disciplinas)
+  </button>
+</header>
 
           <div style={{ backgroundColor: '#ffffff', border: '1px solid #0a291c', borderRadius: '50px', padding: '0.85rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '2.5rem', boxShadow: '0 4px 12px rgba(10, 41, 28, 0.05)', boxSizing: 'border-box' }}>
             <span>🔍</span>
