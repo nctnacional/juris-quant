@@ -74,24 +74,22 @@ export const CustomSimuladoModal: React.FC<CustomSimuladoModalProps> = ({
     setErrorMsg(null);
 
     try {
-      // 1. Buscar IDs de questões que este utilizador já respondeu no histórico
       const { data: historyData, error: historyError } = await supabase
         .from('user_question_history')
         .select('question_id')
         .eq('user_id', userId);
 
-      if (historyError) console.error('Erro ao buscar histórico:', historyError);
+      if (historyError) {
+        console.error('Erro ao buscar histórico:', historyError);
+      }
 
       const answeredIds = historyData ? historyData.map(h => h.question_id) : [];
 
-      // 2. Buscar questões no banco (tabela 'questoes' ou 'questões') filtrando pelas disciplinas escolhidas
-     // Exemplo de como deve ficar a query dentro do CustomSimuladoModal.tsx:
-let query = supabase
-  .from('"questões"') // Note as aspas duplas e os acentos corretos
-  .select('*')
-  .in('discipline_id', selectedDisciplines);
+      let query = supabase
+        .from('questoes')
+        .select('*')
+        .in('discipline_id', selectedDisciplines);
 
-      // Se houver questões respondidas, exclui do lote para não repetir
       if (answeredIds.length > 0) {
         query = query.not('id', 'in', `(${answeredIds.join(',')})`);
       }
@@ -103,21 +101,25 @@ let query = supabase
       }
 
       if (!questionsData || questionsData.length === 0) {
-        setErrorMsg('Não há questões inéditas disponíveis nestas disciplinas para o seu histórico. Tente outras disciplinas ou limpe o histórico.');
+        setErrorMsg('Não há questoes inéditas disponíveis nestas disciplinas para o seu histórico. Tente outras disciplinas ou limpe o histórico.');
         setLoading(false);
         return;
       }
 
-      // Embaralha e pega até 100 questões
-      const shuffled = questionsData.sort(() => 0.5 - Math.random()).slice(0, 100);
+      const shuffled = [...questionsData].sort(() => 0.5 - Math.random()).slice(0, 100);
 
-      // 3. Registra no histórico que estas questões foram apresentadas ao usuário
       const newHistoryEntries = shuffled.map(q => ({
         user_id: userId,
         question_id: q.id.toString(),
       }));
 
-      await supabase.from('user_question_history').insert(newHistoryEntries);
+      const { error: insertHistoryError } = await supabase
+        .from('user_question_history')
+        .insert(newHistoryEntries);
+
+      if (insertHistoryError) {
+        console.error('Erro ao registrar histórico do simulado:', insertHistoryError);
+      }
 
       setLoading(false);
       onStartCustomSimulado(shuffled, `Simulado Personalizado (${selectedDisciplines.length} Disciplinas)`);
