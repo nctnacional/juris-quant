@@ -83,17 +83,18 @@ export const CustomSimuladoModal: React.FC<CustomSimuladoModalProps> = ({
         console.error('Erro ao buscar histórico:', historyError);
       }
 
-      const answeredIds = historyData ? historyData.map(h => h.question_id) : [];
+      // Garanta que a busca de questões respondidas converte os IDs corretamente:
+const answeredQuestionIds = historyData.map(h => h.question_id);
 
-      let query = supabase
-        .from('questoes')
-        .select('*')
-        .in('discipline_id', selectedDisciplines);
+let query = supabase
+  .from('questoes')
+  .select('*')
+  .in('disciplina', selectedDisciplines);
 
-      if (answeredIds.length > 0) {
-        query = query.not('id', 'in', `(${answeredIds.join(',')})`);
-      }
-
+// Aplica o filtro de inéditas apenas se houver histórico prévio
+if (answeredQuestionIds.length > 0) {
+  query = query.not('id', 'in', `(${answeredQuestionIds.join(',')})`);
+}
       const { data: questionsData, error: qError } = await query.limit(100);
 
       if (qError) {
