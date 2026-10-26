@@ -246,7 +246,7 @@ export default function App() {
               Banco de questões comentadas, resumos estratégicos por ramo e preparação quantitativa completa para alcançar a excelência jurídica.
             </p>
 
-            {/* BOTÃO DO SIMULADO PERSONALIZADO */}
+            {/* BOTÃO DO SIMULADO PERSONALIZADO PREMIUM */}
             <button
               onClick={() => {
                 if (isFree) {
