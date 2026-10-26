@@ -1,145 +1,136 @@
-import React, { useEffect, useState } from 'react'
-import { supabase } from '../lib/supabase'
+import React, { useEffect, useState } from 'react';
+import { supabase } from '../lib/supabase';
 
-interface UserProfile {
-  id: string
-  email?: string
-  role?: string
-  plan?: string
+interface Profile {
+  id: string;
+  email?: string;
+  role: string;
+  plan: string;
 }
 
 interface AdminViewProps {
-  onBack: () => void
+  onBack: () => void;
 }
 
 export const AdminView: React.FC<AdminViewProps> = ({ onBack }) => {
-  const [profiles, setProfiles] = useState<UserProfile[]>([])
-  const [loading, setLoading] = useState<boolean>(true)
-  const [mensagem, setMensagem] = useState<string | null>(null)
-
-  const fetchProfiles = async () => {
-    setLoading(true)
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-
-    if (error) {
-      console.error('Erro ao buscar perfis:', error.message)
-      setMensagem(`Erro ao buscar: ${error.message}`)
-    } else if (data) {
-      setProfiles(data as UserProfile[])
-    }
-    setLoading(false)
-  }
+  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchProfiles()
-  }, [])
+    fetchProfiles();
+  }, []);
 
-  // Função para alterar o plano do usuário no banco de dados
-  const handlePlanChange = async (userId: string, newPlan: 'free' | 'intermediario' | 'premium') => {
+  const fetchProfiles = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id, email, role, plan');
+
+    if (error) {
+      console.error('Erro ao buscar perfis:', error);
+    } else if (data) {
+      setProfiles(data);
+    }
+    setLoading(false);
+  };
+
+  const handleUpdatePlan = async (userId: string, newPlan: string) => {
     const { error } = await supabase
       .from('profiles')
       .update({ plan: newPlan })
-      .eq('id', userId)
+      .eq('id', userId);
 
     if (error) {
-      setMensagem(`Erro ao atualizar plano: ${error.message}`)
+      alert('Erro ao atualizar plano: ' + error.message);
     } else {
-      setMensagem('Plano atualizado com sucesso!')
       setProfiles(prev =>
         prev.map(p => (p.id === userId ? { ...p, plan: newPlan } : p))
-      )
+      );
     }
+  };
 
-    setTimeout(() => setMensagem(null), 3000)
+  if (loading) {
+    return (
+      <div style={{ textAlign: 'center', padding: '3rem', color: '#0a291c' }}>
+        <h3>Carregando dados dos alunos...</h3>
+      </div>
+    );
   }
 
   return (
-    <div style={{ maxWidth: '1000px', margin: '2rem auto', padding: '1.5rem', background: '#ffffff', borderRadius: '16px', border: '1px solid #c7d3c5', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-        <div>
-          <h1 style={{ fontSize: '1.8rem', color: '#0a291c', fontWeight: 'bold', fontFamily: 'serif' }}>Painel de Administração de Planos</h1>
-          <p style={{ fontSize: '0.9rem', color: '#4a5449' }}>Gerencie os acessos e planos dos alunos cadastrados</p>
+    <div style={{ maxWidth: '1200px', margin: '2rem auto', padding: '0 1.5rem' }}>
+      <div style={{ backgroundColor: '#ffffff', borderRadius: '16px', padding: '2rem', border: '1px solid #e5e7eb', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+        
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <div>
+            <h1 style={{ fontSize: '1.8rem', color: '#0a291c', fontFamily: 'serif', margin: 0 }}>Painel de Administração de Planos</h1>
+            <p style={{ color: '#6b7280', fontSize: '0.9rem', marginTop: '0.4rem' }}>Gerencie os acessos e planos dos alunos cadastrados</p>
+          </div>
+          <button
+            onClick={onBack}
+            style={{ backgroundColor: '#e4eae3', color: '#0a291c', border: 'none', padding: '0.6rem 1.2rem', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
+          >
+            ← Voltar para a Tela Principal
+          </button>
         </div>
-        <button
-          onClick={onBack}
-          style={{ padding: '0.6rem 1.2rem', background: '#e4eae3', color: '#0a291c', border: 'none', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
-        >
-          ← Voltar para a Tela Principal
-        </button>
-      </div>
 
-      {mensagem && (
-        <div style={{ marginBottom: '1rem', padding: '0.75rem', background: '#d1dcce', color: '#0a291c', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 'bold' }}>
-          {mensagem}
-        </div>
-      )}
-
-      {loading ? (
-        <div style={{ textAlign: 'center', padding: '3rem', color: '#4a5449' }}>Carregando usuários...</div>
-      ) : (
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-            <thead>
-              <tr style={{ borderBottom: '2px solid #e4eae3', background: '#f8f7f2', color: '#0a291c', fontSize: '0.8rem', textTransform: 'uppercase' }}>
-                <th style={{ padding: '0.75rem' }}>ID / Perfil</th>
-                <th style={{ padding: '0.75rem' }}>Papel</th>
-                <th style={{ padding: '0.75rem' }}>Plano Atual</th>
-                <th style={{ padding: '0.75rem', textAlign: 'center' }}>Ações (Alterar Plano)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {profiles.map(user => (
-                <tr key={user.id} style={{ borderBottom: '1px solid #e4eae3', fontSize: '0.9rem' }}>
-                  <td style={{ padding: '0.75rem', color: '#1f2937', fontWeight: 500 }}>
-                    {user.email || user.id}
-                  </td>
-                  <td style={{ padding: '0.75rem', color: '#4a5449' }}>
-                    {user.role || 'user'}
-                  </td>
-                  <td style={{ padding: '0.75rem' }}>
-                    <span
-                      style={{
-                        padding: '0.25rem 0.6rem',
-                        borderRadius: '50px',
-                        fontSize: '0.75rem',
-                        fontWeight: 'bold',
-                        backgroundColor: user.plan === 'premium' ? '#0a291c' : user.plan === 'intermediario' ? '#1c523a' : '#d1dcce',
-                        color: user.plan === 'free' || !user.plan ? '#0a291c' : '#ffffff'
-                      }}
+        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', marginTop: '1rem' }}>
+          <thead>
+            <tr style={{ backgroundColor: '#f8f7f2', borderBottom: '2px solid #e5e7eb', color: '#0a291c', fontSize: '0.85rem', textTransform: 'uppercase' }}>
+              <th style={{ padding: '1rem' }}>USUÁRIO / EMAIL</th>
+              <th style={{ padding: '1rem' }}>PAPEL</th>
+              <th style={{ padding: '1rem' }}>PLANO ATUAL</th>
+              <th style={{ padding: '1rem', textAlign: 'center' }}>AÇÕES (ALTERAR PLANO)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {profiles.map(p => (
+              <tr key={p.id} style={{ borderBottom: '1px solid #e5e7eb', fontSize: '0.9rem' }}>
+                <td style={{ padding: '1rem', fontWeight: 600, color: '#0a291c' }}>
+                  {p.email || p.id}
+                </td>
+                <td style={{ padding: '1rem', color: '#6b7280' }}>{p.role}</td>
+                <td style={{ padding: '1rem' }}>
+                  <span style={{
+                    backgroundColor: p.plan === 'premium' ? '#0a291c' : p.plan === 'intermediario' ? '#1c523a' : '#d1dcce',
+                    color: p.plan === 'free' ? '#0a291c' : '#ffffff',
+                    padding: '0.3rem 0.8rem',
+                    borderRadius: '50px',
+                    fontSize: '0.75rem',
+                    fontWeight: 'bold',
+                    textTransform: 'uppercase'
+                  }}>
+                    {p.plan}
+                  </span>
+                </td>
+                <td style={{ padding: '1rem', textAlign: 'center' }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                    <button
+                      onClick={() => handleUpdatePlan(p.id, 'free')}
+                      style={{ padding: '0.4rem 0.8rem', borderRadius: '6px', border: 'none', backgroundColor: '#e4eae3', color: '#0a291c', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.8rem' }}
                     >
-                      {(user.plan || 'free').toUpperCase()}
-                    </span>
-                  </td>
-                  <td style={{ padding: '0.75rem', textAlign: 'center' }}>
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
-                      <button
-                        onClick={() => handlePlanChange(user.id, 'free')}
-                        style={{ padding: '0.3rem 0.6rem', background: '#d1dcce', color: '#0a291c', border: 'none', borderRadius: '4px', fontSize: '0.7rem', cursor: 'pointer', fontWeight: 'bold' }}
-                      >
-                        Tornar Free
-                      </button>
-                      <button
-                        onClick={() => handlePlanChange(user.id, 'intermediario')}
-                        style={{ padding: '0.3rem 0.6rem', background: '#1c523a', color: '#ffffff', border: 'none', borderRadius: '4px', fontSize: '0.7rem', cursor: 'pointer' }}
-                      >
-                        Tornar Disciplinas
-                      </button>
-                      <button
-                        onClick={() => handlePlanChange(user.id, 'premium')}
-                        style={{ padding: '0.3rem 0.6rem', background: '#0a291c', color: '#ffffff', border: 'none', borderRadius: '4px', fontSize: '0.7rem', cursor: 'pointer' }}
-                      >
-                        Tornar Premium
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+                      Tornar Free
+                    </button>
+                    <button
+                      onClick={() => handleUpdatePlan(p.id, 'intermediario')}
+                      style={{ padding: '0.4rem 0.8rem', borderRadius: '6px', border: 'none', backgroundColor: '#1c523a', color: '#ffffff', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.8rem' }}
+                    >
+                      Tornar Disciplinas
+                    </button>
+                    <button
+                      onClick={() => handleUpdatePlan(p.id, 'premium')}
+                      style={{ padding: '0.4rem 0.8rem', borderRadius: '6px', border: 'none', backgroundColor: '#0a291c', color: '#e2c07d', fontWeight: 'bold', cursor: 'pointer', fontSize: '0.8rem' }}
+                    >
+                      Tornar Premium
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+      </div>
     </div>
-  )
-}
+  );
+};
