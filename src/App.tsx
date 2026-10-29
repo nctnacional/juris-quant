@@ -461,7 +461,7 @@ export default function App() {
 
           {/* Telegram */}
           <a 
-            href="https://t.me/seu_usuario_telegram" 
+            href="https://t.me/+ODGObqx6JXE0MjU5" 
             target="_blank" 
             rel="noopener noreferrer"
             title="Suporte via Telegram"
