@@ -202,7 +202,7 @@ export default function App() {
   );
 
   return (
-    <div style={{ backgroundColor: '#f8f7f2', minHeight: '100vh', color: '#1f2937', fontFamily: "'Plus Jakarta Sans', sans-serif", width: '100%', overflowX: 'hidden', boxSizing: 'border-box' }}>
+    <div style={{ backgroundColor: '#f8f7f2', minHeight: '100vh', color: '#1f2937', fontFamily: "'Plus Jakarta Sans', sans-serif", width: '100%', overflowX: 'hidden', boxSizing: 'border-box', paddingBottom: '4.5rem' }}>
       
       <Header 
         userPlan={userPlan as any} 
@@ -402,6 +402,35 @@ export default function App() {
         userId={session?.user?.id || ''}
         onStartCustomSimulado={handleStartCustomSimulado}
       />
+
+      {/* Rodapé Flutuante Fixo (Direitos Reservados, WhatsApp e Telegram) */}
+      <footer className="fixed bottom-0 left-0 w-full bg-[#0A1F18] text-[#D4AF37] border-t border-[#D4AF37]/20 py-3 px-6 shadow-lg z-50 flex flex-col sm:flex-row items-center justify-between text-xs sm:text-sm">
+        <div className="mb-2 sm:mb-0 font-medium text-gray-300">
+          © 2026 <span className="text-[#D4AF37] font-semibold">JURIS QUANT</span>. Todos os direitos reservados.
+        </div>
+
+        <div className="flex items-center space-x-4">
+          {/* WhatsApp */}
+          <a 
+            href="https://wa.me/5521998190025?text=Ol%C3%A1%2C%20preciso%20de%20suporte%20no%20Juris%20Quant" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="flex items-center space-x-1.5 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] px-3 py-1.5 rounded-full border border-[#25D366]/30 transition-all font-medium"
+          >
+            <span>WhatsApp</span>
+          </a>
+
+          {/* Telegram */}
+          <a 
+            href="https://t.me/seu_usuario_telegram" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="className flex items-center space-x-1.5 bg-[#0088cc]/10 hover:bg-[#0088cc]/20 text-[#0088cc] px-3 py-1.5 rounded-full border border-[#0088cc]/30 transition-all font-medium"
+          >
+            <span>Telegram</span>
+          </a>
+        </div>
+      </footer>
 
     </div>
   );

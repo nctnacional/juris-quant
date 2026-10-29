@@ -6,6 +6,7 @@ interface Profile {
   email?: string;
   role: string;
   plan: string;
+  created_at?: string; // Declaração da data de cadastro
 }
 
 interface AdminViewProps {
@@ -22,9 +23,10 @@ export const AdminView: React.FC<AdminViewProps> = ({ onBack }) => {
 
   const fetchProfiles = async () => {
     setLoading(true);
+    // Incluindo a coluna 'created_at' no select
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, email, role, plan');
+      .select('id, email, role, plan, created_at');
 
     if (error) {
       console.error('Erro ao buscar perfis:', error);
@@ -58,7 +60,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ onBack }) => {
   }
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '2rem auto', padding: '0 1.5rem' }}>
+    <div style={{ maxWidth: '1200px', margin: '2rem auto', padding: '0 1.5rem', paddingBottom: '5rem' }}>
       <div style={{ backgroundColor: '#ffffff', borderRadius: '16px', padding: '2rem', border: '1px solid #e5e7eb', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
         
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
@@ -80,6 +82,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ onBack }) => {
               <th style={{ padding: '1rem' }}>USUÁRIO / EMAIL</th>
               <th style={{ padding: '1rem' }}>PAPEL</th>
               <th style={{ padding: '1rem' }}>PLANO ATUAL</th>
+              <th style={{ padding: '1rem' }}>DATA DE CADASTRO</th>
               <th style={{ padding: '1rem', textAlign: 'center' }}>AÇÕES (ALTERAR PLANO)</th>
             </tr>
           </thead>
@@ -103,6 +106,14 @@ export const AdminView: React.FC<AdminViewProps> = ({ onBack }) => {
                     {p.plan}
                   </span>
                 </td>
+
+                {/* Formatação correta usando 'p.created_at' */}
+                <td style={{ padding: '1rem', color: '#6b7280', fontSize: '0.85rem' }}>
+                  {p.created_at 
+                    ? new Date(p.created_at).toLocaleDateString('pt-BR') 
+                    : 'N/A'}
+                </td>
+
                 <td style={{ padding: '1rem', textAlign: 'center' }}>
                   <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
                     <button
