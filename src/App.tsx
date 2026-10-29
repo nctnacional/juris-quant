@@ -403,21 +403,60 @@ export default function App() {
         onStartCustomSimulado={handleStartCustomSimulado}
       />
 
-      {/* Rodapé Flutuante Fixo (Direitos Reservados, WhatsApp e Telegram) */}
-      <footer className="fixed bottom-0 left-0 w-full bg-[#0A1F18] text-[#D4AF37] border-t border-[#D4AF37]/20 py-3 px-6 shadow-lg z-50 flex flex-col sm:flex-row items-center justify-between text-xs sm:text-sm">
-        <div className="mb-2 sm:mb-0 font-medium text-gray-300">
-          © 2026 <span className="text-[#D4AF37] font-semibold">JURIS QUANT</span>. Todos os direitos reservados.
+      {/* Rodapé Flutuante Fixo (Direitos Reservados à esquerda, WhatsApp e Telegram à direita com ícones) */}
+      <footer style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        width: '100%',
+        backgroundColor: '#0a291c',
+        color: '#e2c07d',
+        borderTop: '1px solid rgba(226, 192, 125, 0.2)',
+        padding: '0.75rem 2rem',
+        boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.15)',
+        zIndex: 9999,
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        boxSizing: 'border-box',
+        fontSize: '0.85rem'
+      }}>
+        
+        {/* Direitos Reservados */}
+        <div style={{ color: '#e2d9c8', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+          <span>© 2026</span>
+          <span style={{ color: '#e2c07d', fontWeight: 'bold' }}>JURIS QUANT</span>. 
+          <span style={{ opacity: 0.8, display: 'inline' }}>Todos os direitos reservados.</span>
         </div>
 
-        <div className="flex items-center space-x-4">
+        {/* Ícones de Suporte (WhatsApp e Telegram) alinhados à direita */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          
           {/* WhatsApp */}
           <a 
-            href="https://wa.me/5521998190025?text=Ol%C3%A1%2C%20preciso%20de%20suporte%20no%20Juris%20Quant" 
+            href="https://wa.me/5521998190025?text=Olá,%20preciso%20de%20suporte%20no%20Juris%20Quant" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="flex items-center space-x-1.5 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] px-3 py-1.5 rounded-full border border-[#25D366]/30 transition-all font-medium"
+            title="Suporte via WhatsApp"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'rgba(37, 211, 102, 0.15)',
+              color: '#25D366',
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              border: '1px solid rgba(37, 211, 102, 0.3)',
+              textDecoration: 'none',
+              transition: 'transform 0.2s ease'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
           >
-            <span>WhatsApp</span>
+            <svg style={{ width: '18px', height: '18px', fill: 'currentColor' }} viewBox="0 0 24 24">
+              <path d="M12 2a10 10 0 0110 10 10 10 0 01-14.82 8.65L2 22l1.39-5.06A10 10 0 0112 2zm0 2a8 8 0 00-6.9 12.06l-.28.98 1.02-.28A8 8 0 1012 4zm-1.12 4.07h1.03c.18 0 .34.07.45.2.2.24.78 1.88.85 2.03.07.15.11.33.02.5-.09.18-.14.28-.28.45-.14.17-.3.37-.43.5-.14.14-.28.29-.12.57.16.28.71 1.17 1.52 1.89 1.04.93 1.92 1.22 2.2 1.36.28.14.44.12.6-.07.16-.18.7-0.81.88-1.09.18-.28.36-.23.6-.14.24.09 1.54.73 1.8 0.86.27.13.45.2.52.32.07.12.07.71-.16 1.36-.23.65-1.35 1.28-1.87 1.31-.52.03-1.02.13-3.41-.81-2.88-1.13-4.73-4.08-4.88-4.28-.14-.2-1.18-1.57-1.18-2.99 0-1.42.74-2.12 1.01-2.41.27-.29.58-.36.78-.36z"/>
+            </svg>
           </a>
 
           {/* Telegram */}
@@ -425,10 +464,28 @@ export default function App() {
             href="https://t.me/seu_usuario_telegram" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="className flex items-center space-x-1.5 bg-[#0088cc]/10 hover:bg-[#0088cc]/20 text-[#0088cc] px-3 py-1.5 rounded-full border border-[#0088cc]/30 transition-all font-medium"
+            title="Suporte via Telegram"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'rgba(0, 136, 204, 0.15)',
+              color: '#0088cc',
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              border: '1px solid rgba(0, 136, 204, 0.3)',
+              textDecoration: 'none',
+              transition: 'transform 0.2s ease'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
           >
-            <span>Telegram</span>
+            <svg style={{ width: '18px', height: '18px', fill: 'currentColor' }} viewBox="0 0 24 24">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
+            </svg>
           </a>
+
         </div>
       </footer>
 
